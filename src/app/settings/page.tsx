@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { StudentNav } from '@/components/StudentNav';
+import { StudentLayout } from '@/components/StudentLayout';
 import { 
   User, 
   ShieldCheck, 
@@ -93,32 +93,29 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#FAFAFA] flex flex-col">
-        <StudentNav user={currentUser} />
-        <div className="flex-1 flex flex-col items-center justify-center text-zinc-400">
+      <StudentLayout user={currentUser} breadcrumbs={[{ label: 'Settings & Privacy' }]}>
+        <div className="py-24 flex flex-col items-center justify-center text-zinc-400">
           <Loader2 className="w-8 h-8 animate-spin text-amber-600 mb-2" />
           <p className="text-xs">Loading settings...</p>
         </div>
-      </div>
+      </StudentLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] flex flex-col">
-      <StudentNav user={currentUser} />
-
-      <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <StudentLayout user={currentUser} breadcrumbs={[{ label: 'Settings & Privacy' }]}>
+      <div className="space-y-8 max-w-4xl">
         <div>
-          <h1 className="text-2xl font-extrabold text-zinc-900 tracking-tight">
+          <h1 className="text-2xl font-extrabold text-zinc-950 dark:text-white tracking-tight">
             Settings & Privacy
           </h1>
-          <p className="text-xs text-zinc-500 mt-1">
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
             Manage your personal academic profile, language preferences, and data privacy controls
           </p>
         </div>
 
         {/* ================= PROFILE SETTINGS ================= */}
-        <div className="bg-white border border-zinc-200 rounded-2xl p-6 sm:p-8 shadow-2xs space-y-6">
+        <div className="bg-white dark:bg-[#121215] border border-zinc-200/80 dark:border-zinc-800/80 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
           <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
             <div className="flex items-center gap-2">
               <User className="w-4 h-4 text-amber-600" />
@@ -312,7 +309,7 @@ export default function SettingsPage() {
             </button>
           </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </StudentLayout>
   );
 }

@@ -1,44 +1,100 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
-  --color-gold-50: #FCF9F2;
-  --color-gold-100: #F7F1DF;
-  --color-gold-200: #EFE2BE;
-  --color-gold-300: #E4CE96;
-  --color-gold-400: #D8B76C;
+  --color-gold-50: #FCFAF5;
+  --color-gold-100: #F7F3E8;
+  --color-gold-200: #EEE3CB;
+  --color-gold-300: #E2CEA6;
+  --color-gold-400: #D4B579;
   --color-gold-500: #C5A059;
-  --color-gold-600: #AB8441;
+  --color-gold-600: #AA8341;
   --color-gold-700: #886532;
-  --color-gold-800: #6D512B;
-  --color-gold-900: #574125;
+  --color-gold-800: #6B4E28;
+  --color-gold-900: #543E23;
+
+  --color-surface-subtle: #F9F9FB;
+  --color-surface-card: #FFFFFF;
 }
 
 :root {
-  --background: #FAFAFA;
-  --foreground: #18181B;
+  --background: #F8F9FA;
+  --foreground: #121316;
+  --card: #FFFFFF;
+  --card-border: rgba(228, 228, 231, 0.85);
+  --muted: #71717A;
+}
+
+.dark {
+  --background: #09090B;
+  --foreground: #F4F4F5;
+  --card: #121215;
+  --card-border: rgba(39, 39, 42, 0.85);
+  --muted: #A1A1AA;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.011em;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Subtle luxury grain & glows */
+.glow-gold {
+  box-shadow: 0 0 25px -5px rgba(197, 160, 89, 0.25);
+}
+
+.glow-emerald {
+  box-shadow: 0 0 20px -5px rgba(16, 185, 129, 0.25);
+}
+
+.card-luxury {
+  background: #FFFFFF;
+  border: 1px solid rgba(228, 228, 231, 0.85);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.02), 0 10px 25px -5px rgba(0, 0, 0, 0.03);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dark .card-luxury {
+  background: #121215;
+  border: 1px solid rgba(39, 39, 42, 0.85);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+}
+
+.card-luxury:hover {
+  border-color: rgba(197, 160, 89, 0.4);
+  box-shadow: 0 8px 30px -8px rgba(0, 0, 0, 0.06);
+}
+
+.dark .card-luxury:hover {
+  border-color: rgba(197, 160, 89, 0.5);
+  box-shadow: 0 8px 30px -8px rgba(0, 0, 0, 0.4);
 }
 
 /* Custom scrollbars */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #E4E4E7;
-  border-radius: 3px;
+  background: #D4D4D8;
+  border-radius: 9999px;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #3F3F46;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #D4D4D8;
+  background: #A1A1AA;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #52525B;
 }
 
 /* Flashcard 3D perspective */
@@ -54,3 +110,58 @@ body {
 .rotate-y-180 {
   transform: rotateY(180deg);
 }
+
+/* 3-Hub Custom Animations */
+@keyframes radarPing {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+@keyframes equalizerWave {
+  0%, 100% {
+    height: 6px;
+  }
+  50% {
+    height: 24px;
+  }
+}
+
+@keyframes gentleFloat {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.animate-radar-ping {
+  animation: radarPing 2.4s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.animate-gentle-float {
+  animation: gentleFloat 4s ease-in-out infinite;
+}
+
+.animate-eq-1 {
+  animation: equalizerWave 1.2s ease-in-out infinite;
+}
+.animate-eq-2 {
+  animation: equalizerWave 0.8s ease-in-out infinite 0.2s;
+}
+.animate-eq-3 {
+  animation: equalizerWave 1.4s ease-in-out infinite 0.4s;
+}
+.animate-eq-4 {
+  animation: equalizerWave 1.0s ease-in-out infinite 0.1s;
+}
+.animate-eq-5 {
+  animation: equalizerWave 1.3s ease-in-out infinite 0.3s;
+}
+

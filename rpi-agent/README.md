@@ -1,30 +1,30 @@
-# Lecture Pod — Raspberry Pi 4 Model B Agent
+# Lecture Pod — LecturePod Device Hardware Agent
 
-The **Lecture Pod Agent** runs locally on the physical Raspberry Pi 4 Model B device. It is designed to capture audio recordings inside classrooms completely offline, store them safely in a persistent local SQLite queue, and automatically sync them with the student's cloud web platform as soon as Wi-Fi, hotspot, or campus internet becomes reachable.
+The **LecturePod Agent** runs locally on the physical LecturePod Device. It is designed to capture audio recordings inside classrooms completely offline, store them safely in a persistent local SQLite queue, and automatically sync them with the student's cloud web platform as soon as Wi-Fi, hotspot, or campus internet becomes reachable.
 
 ---
 
 ## 1. Hardware Architecture & Requirements
 
-- **Processor:** Raspberry Pi 4 Model B (2GB, 4GB, or 8GB RAM)
+- **Processor:** LecturePod Embedded SoC / ARM64 Platform (2GB, 4GB, or 8GB RAM)
 - **Audio Input:** USB Condenser Microphone or I2S MEMS Microphone Hat (e.g. INMP441)
 - **Status Indicator:** Standard onboard LED or I2C OLED display (optional)
 - **Physical Controls:** Momentary push-button connected to GPIO 17 (pin 11) for one-touch record start/stop
-- **Storage:** Class 10 High-Endurance MicroSD card (32GB+) formatted with Raspberry Pi OS Lite (64-bit)
+- **Storage:** Class 10 High-Endurance MicroSD card (32GB+) formatted with LecturePod Edge OS (64-bit)
 
 ---
 
-## 2. Installation on Raspberry Pi
+## 2. Installation on LecturePod Device
 
-1. Clone or copy the `rpi-agent` directory to your Pi:
+1. Clone or copy the `rpi-agent` directory to your LecturePod Device:
    ```bash
-   scp -r rpi-agent pi@raspberrypi.local:/home/pi/lecturepod-agent
+   scp -r rpi-agent device@lecturepod.local:/home/device/lecturepod-agent
    ```
 
-2. SSH into your Raspberry Pi (or open a terminal via VNC):
+2. SSH into your LecturePod Device (or open a terminal via VNC/serial):
    ```bash
-   ssh pi@raspberrypi.local
-   cd /home/pi/lecturepod-agent
+   ssh device@lecturepod.local
+   cd /home/device/lecturepod-agent
    ```
 
 3. Ensure Python 3.9+ is installed:
@@ -38,11 +38,11 @@ The **Lecture Pod Agent** runs locally on the physical Raspberry Pi 4 Model B de
 
 1. Open your Lecture Pod student web dashboard: `http://<your-server-ip>:3000/devices`.
 2. Click **"Pair New Device"** to generate a secure 6-character pairing code (e.g., `LP-7824`).
-3. On the Raspberry Pi terminal, run:
+3. On the LecturePod Device terminal, run:
    ```bash
    python3 lecturepod_agent.py pair --code LP-7824 --server http://192.168.1.100:3000
    ```
-4. The Pi connects to the server, exchanges the code for a permanent cryptographically signed API token, and writes `config.json`. The dashboard will immediately reflect the paired device status!
+4. The LecturePod Device connects to the server, exchanges the code for a permanent cryptographically signed API token, and writes `config.json`. The dashboard will immediately reflect the paired device status!
 
 ---
 
@@ -52,7 +52,7 @@ You can trigger a recording without any active internet connection:
 ```bash
 python3 lecturepod_agent.py record --title "Fourier Transforms" --subject "Signals & Systems" --duration 3600
 ```
-- Audio is saved into `/home/pi/lecturepod-agent/recordings/`.
+- Audio is saved into `/home/device/lecturepod-agent/recordings/`.
 - Metadata is inserted into the local persistent queue (`queue.db`).
 - If internet is unavailable, it remains safely queued. No recordings are lost.
 
@@ -74,7 +74,7 @@ python3 lecturepod_agent.py status
 
 ## 6. Running as an Automatic Background Daemon
 
-To ensure the Pi automatically syncs whenever it detects Wi-Fi or a phone hotspot, run the daemon:
+To ensure the LecturePod Device automatically syncs whenever it detects Wi-Fi or a phone hotspot, run the daemon:
 ```bash
 python3 lecturepod_agent.py daemon
 ```

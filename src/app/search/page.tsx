@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { StudentNav } from '@/components/StudentNav';
+import { StudentLayout } from '@/components/StudentLayout';
 import { 
   Search, 
   Library, 
@@ -78,15 +78,13 @@ function SearchPageContent() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] flex flex-col">
-      <StudentNav user={currentUser} />
-
-      <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    <StudentLayout user={currentUser} breadcrumbs={[{ label: 'Concept Search' }]}>
+      <div className="space-y-6 max-w-5xl">
         <div>
-          <h1 className="text-2xl font-extrabold text-zinc-900 tracking-tight">
+          <h1 className="text-2xl font-extrabold text-zinc-950 dark:text-white tracking-tight">
             Global Concept & Lecture Search
           </h1>
-          <p className="text-xs text-zinc-500 mt-1">
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
             Search across lecture titles, subjects, transcripts, study notes, and flashcards
           </p>
         </div>
@@ -99,12 +97,12 @@ function SearchPageContent() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Type a concept, formula, keyword, or exam topic (e.g. Eigenvalues, TCP, Entropy)..."
-            className="w-full pl-12 pr-28 py-3.5 bg-white border border-zinc-200 rounded-2xl text-sm text-zinc-900 shadow-xs focus:outline-hidden focus:border-amber-600 transition"
+            className="w-full pl-12 pr-28 py-3.5 bg-white dark:bg-[#121215] border border-zinc-200/80 dark:border-zinc-800 rounded-2xl text-sm text-zinc-900 dark:text-white shadow-xs focus:outline-hidden focus:border-amber-500 transition"
           />
           <button
             type="submit"
             disabled={loading || !query.trim()}
-            className="absolute right-2 top-2 px-5 py-2 text-xs font-semibold text-white bg-zinc-900 hover:bg-zinc-800 rounded-xl transition disabled:opacity-50"
+            className="absolute right-2 top-2 px-5 py-2 text-xs font-semibold text-white bg-zinc-950 dark:bg-zinc-100 dark:text-zinc-950 hover:bg-zinc-800 dark:hover:bg-zinc-200 rounded-xl transition disabled:opacity-50"
           >
             {loading ? 'Searching...' : 'Search'}
           </button>
@@ -257,8 +255,8 @@ function SearchPageContent() {
             </p>
           </div>
         )}
-      </main>
-    </div>
+      </div>
+    </StudentLayout>
   );
 }
 

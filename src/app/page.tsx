@@ -17,137 +17,244 @@ import {
   ArrowRight, 
   CheckCircle2, 
   Play,
-  RotateCw,
-  HardDrive
+  HardDrive,
+  Radio,
+  Sliders,
+  BatteryCharging,
+  Fingerprint
 } from 'lucide-react';
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-[#FAFAFA] text-zinc-900 flex flex-col">
+    <div className="min-h-screen bg-[#F8F9FA] text-zinc-950 flex flex-col selection:bg-amber-200 selection:text-amber-950">
       <Navbar />
 
       <main className="flex-1">
         {/* ================= HERO SECTION ================= */}
-        <section className="relative overflow-hidden pt-20 pb-16 md:pt-28 md:pb-24 border-b border-zinc-200">
+        <section className="relative overflow-hidden pt-20 pb-20 md:pt-32 md:pb-28 border-b border-zinc-200/70">
+          {/* Subtle Ambient Radial Glow */}
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] bg-gradient-to-tr from-amber-200/30 via-gold-200/20 to-transparent blur-3xl pointer-events-none rounded-full -z-10" />
+
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-medium mb-6">
-              <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-              Physical Raspberry Pi 4 Device + Automated Student Workspace
+            {/* Elegant Pill Badge */}
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-amber-200/70 text-amber-900 text-xs font-semibold tracking-wide shadow-xs mb-8">
+              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+              Dedicated LecturePod Device &bull; Autonomous Offline Capture
             </div>
 
             {/* Main Headline */}
-            <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-zinc-900 max-w-4xl mx-auto leading-[1.15]">
+            <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-zinc-950 max-w-4xl mx-auto leading-[1.08]">
               Never Lose a Lecture.{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-600 via-amber-700 to-amber-800">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-600 via-amber-700 to-amber-900">
                 Never Miss a Concept.
               </span>
             </h1>
 
             {/* Supporting Text */}
-            <p className="mt-6 text-lg sm:text-xl text-zinc-600 max-w-2xl mx-auto font-normal leading-relaxed">
-              Lecture Pod captures classroom lectures locally without internet, auto-syncs over Wi-Fi, and turns spoken explanations into structured notes, revision sheets, flashcards, and quizzes.
+            <p className="mt-6 text-base sm:text-xl text-zinc-600 max-w-2xl mx-auto font-normal leading-relaxed">
+              Place the compact <strong>LecturePod Device</strong> on your classroom desk. It records studio-quality audio completely offline, auto-syncs over Wi-Fi, and transforms raw lectures into structured study kits, flashcards, and exam quizzes.
             </p>
 
             {/* CTAs */}
-            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
                 href="/register"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 text-sm font-semibold text-white bg-zinc-900 hover:bg-zinc-800 rounded-xl shadow-md transition"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 text-sm font-semibold text-white bg-zinc-950 hover:bg-zinc-800 rounded-xl shadow-md ring-1 ring-zinc-800 transition hover:scale-[1.01]"
               >
                 Get Started
                 <ArrowRight className="w-4 h-4 text-amber-400" />
               </Link>
               <Link
-                href="#features"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 text-sm font-semibold text-zinc-700 hover:text-zinc-900 bg-white border border-zinc-200 hover:bg-zinc-50 rounded-xl transition"
+                href="#device"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 text-sm font-semibold text-zinc-700 hover:text-zinc-950 bg-white border border-zinc-200 hover:bg-zinc-50 rounded-xl shadow-xs transition"
               >
-                Explore Features
+                Explore LecturePod Device
               </Link>
             </div>
 
-            {/* Hero Live Interface / Product Preview */}
-            <div className="mt-14 max-w-5xl mx-auto bg-white border border-zinc-200 rounded-2xl shadow-xl overflow-hidden text-left">
-              <div className="bg-zinc-900 px-4 py-3 flex items-center justify-between border-b border-zinc-800">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-rose-500/80" />
-                  <div className="w-3 h-3 rounded-full bg-amber-500/80" />
-                  <div className="w-3 h-3 rounded-full bg-emerald-500/80" />
-                  <span className="ml-2 text-xs font-mono text-zinc-400">
-                    LecturePod v1.2 — Physical Device Sync Protocol
+            {/* ================= PREMIUM HARDWARE + SAAS PRODUCT PREVIEW ================= */}
+            <div className="mt-16 max-w-5xl mx-auto bg-zinc-950 rounded-3xl p-2 sm:p-3 shadow-2xl ring-1 ring-zinc-800/80 text-left">
+              {/* Studio Device Top Bar */}
+              <div className="px-5 py-3.5 bg-zinc-900/90 rounded-2xl flex items-center justify-between border-b border-zinc-800/80">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-zinc-700" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-zinc-700" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-zinc-700" />
+                  </div>
+                  <span className="text-xs font-mono tracking-tight text-zinc-400 ml-2">
+                    LecturePod Hardware OS &bull; Secure Sync Protocol v1.2
                   </span>
                 </div>
-                <span className="inline-flex items-center gap-1.5 text-xs text-emerald-400 font-mono">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                  RPi4 Hardware Online
-                </span>
+                <div className="flex items-center gap-4 text-xs font-mono text-zinc-400">
+                  <span className="inline-flex items-center gap-1.5 text-emerald-400">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                    LecturePod Unit Online
+                  </span>
+                  <span className="hidden sm:inline-block text-zinc-600">|</span>
+                  <span className="hidden sm:inline-flex items-center gap-1 text-zinc-400">
+                    <BatteryCharging className="w-3.5 h-3.5 text-amber-400" /> 94%
+                  </span>
+                </div>
               </div>
 
-              <div className="p-6 md:p-8 grid grid-cols-1 md:grid-cols-3 gap-6 bg-zinc-50/50">
-                {/* Device Card */}
-                <div className="bg-white p-5 rounded-xl border border-zinc-200 shadow-xs flex flex-col justify-between">
+              {/* Hardware & Workspace Showcase */}
+              <div className="p-6 md:p-8 grid grid-cols-1 md:grid-cols-12 gap-6 bg-gradient-to-b from-zinc-900 to-zinc-950 rounded-b-2xl">
+                {/* Physical Hardware Representation (4 cols) */}
+                <div className="md:col-span-5 bg-zinc-900/80 p-6 rounded-2xl border border-zinc-800 flex flex-col justify-between relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl pointer-events-none" />
+
                   <div>
-                    <div className="flex items-center justify-between text-xs text-zinc-500">
-                      <span className="font-mono">LP-PI4-A82F</span>
-                      <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-medium">
-                        Paired
+                    <div className="flex items-center justify-between text-xs text-zinc-400">
+                      <span className="font-mono text-amber-400">DEVICE #LP-STUDIO-84</span>
+                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-950/80 text-emerald-300 border border-emerald-800/80 text-[11px] font-semibold">
+                        Acoustic Active
                       </span>
                     </div>
-                    <div className="mt-3 flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-zinc-900 flex items-center justify-center text-amber-400">
-                        <Cpu className="w-5 h-5" />
+
+                    {/* Minimalist Hardware Graphic */}
+                    <div className="my-6 p-6 rounded-2xl bg-zinc-950 border border-zinc-800/90 text-center space-y-3 relative">
+                      <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-600 to-amber-400 flex items-center justify-center mx-auto text-zinc-950 shadow-lg ring-4 ring-amber-400/20">
+                        <Radio className="w-7 h-7" />
                       </div>
                       <div>
-                        <h4 className="text-sm font-semibold text-zinc-900">Raspberry Pi 4 Model B</h4>
-                        <p className="text-xs text-zinc-500">Classroom Pod Unit</p>
+                        <h4 className="text-sm font-bold text-white tracking-tight">LecturePod Studio Unit</h4>
+                        <p className="text-xs text-zinc-400 mt-0.5">High-Precision Beamforming Array</p>
+                      </div>
+
+                      {/* Hardware Live VU Waveform */}
+                      <div className="flex items-center justify-center gap-1 pt-2">
+                        {[40, 65, 80, 50, 95, 75, 45, 90, 60, 85, 40].map((h, i) => (
+                          <span
+                            key={i}
+                            className="w-1 bg-amber-400/80 rounded-full animate-pulse"
+                            style={{ height: `${h * 0.28}px`, animationDelay: `${i * 90}ms` }}
+                          />
+                        ))}
                       </div>
                     </div>
                   </div>
-                  <div className="mt-4 pt-3 border-t border-zinc-100 text-xs space-y-1 text-zinc-600 font-mono">
+
+                  <div className="pt-4 border-t border-zinc-800 text-xs font-mono text-zinc-400 space-y-1.5">
                     <div className="flex justify-between">
-                      <span>Offline Storage:</span>
-                      <span className="text-zinc-900 font-semibold">0 pending (synced)</span>
+                      <span>Offline Cache:</span>
+                      <span className="text-zinc-200 font-semibold">0 in queue (synced)</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Last Heartbeat:</span>
-                      <span className="text-emerald-700 font-semibold">Just now</span>
+                      <span>Auto-Sync Network:</span>
+                      <span className="text-emerald-400 font-semibold">Wi-Fi Verified</span>
                     </div>
                   </div>
                 </div>
 
-                {/* Lecture Process Card */}
-                <div className="bg-white p-5 rounded-xl border border-zinc-200 shadow-xs md:col-span-2 flex flex-col justify-between">
+                {/* Real Workspace Preview (7 cols) */}
+                <div className="md:col-span-7 bg-white p-6 sm:p-7 rounded-2xl border border-zinc-200/90 shadow-lg flex flex-col justify-between">
                   <div>
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold uppercase tracking-wider text-amber-800">
-                        Linear Algebra & Matrices
+                      <span className="text-xs font-bold uppercase tracking-wider text-amber-800 bg-amber-50 px-2.5 py-1 rounded-md border border-amber-200">
+                        Computer Science &bull; CS 402
                       </span>
-                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold">
+                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-semibold">
                         Ready
                       </span>
                     </div>
-                    <h3 className="mt-1 text-base font-bold text-zinc-900">
-                      Eigenvalues, Characteristic Polynomials & Diagonalization
+
+                    <h3 className="mt-3 text-lg font-bold text-zinc-950 tracking-tight">
+                      TCP Congestion Control & Congestion Avoidance Algorithms
                     </h3>
-                    <p className="text-xs text-zinc-500 mt-1 line-clamp-2">
-                      &quot;To find the eigenvalues lambda, we compute the determinant of (A minus lambda times I) and set it to zero...&quot;
+
+                    <p className="text-xs text-zinc-600 mt-2 leading-relaxed">
+                      &quot;Flow control protects the receiver buffer via rwnd. Congestion control protects the global network pipe via cwnd. Notice how AIMD guarantees fairness...&quot;
                     </p>
+
+                    {/* Key formulas / Takeaway preview */}
+                    <div className="mt-4 p-3.5 rounded-xl bg-zinc-50 border border-zinc-200/80 text-xs text-zinc-800 font-mono">
+                      <span className="text-amber-800 font-semibold">Efficiency Formula: </span>
+                      Throughput = (MSS / RTT) &times; (1 / &radic;p)
+                    </div>
                   </div>
 
-                  <div className="mt-4 flex flex-wrap items-center gap-2 pt-3 border-t border-zinc-100">
-                    <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-md bg-zinc-100 text-zinc-700">
-                      <FileText className="w-3.5 h-3.5 text-zinc-500" /> AI Notes
+                  <div className="mt-6 flex flex-wrap items-center gap-2 pt-4 border-t border-zinc-100">
+                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-zinc-100 text-zinc-800">
+                      <FileText className="w-3.5 h-3.5 text-zinc-500" /> Synthesized Notes
                     </span>
-                    <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-md bg-zinc-100 text-zinc-700">
-                      <Layers className="w-3.5 h-3.5 text-zinc-500" /> 12 Flashcards
+                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-zinc-100 text-zinc-800">
+                      <Layers className="w-3.5 h-3.5 text-zinc-500" /> 16 Flashcards
                     </span>
-                    <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-md bg-zinc-100 text-zinc-700">
-                      <HelpCircle className="w-3.5 h-3.5 text-zinc-500" /> Practice Quiz
+                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-zinc-100 text-zinc-800">
+                      <HelpCircle className="w-3.5 h-3.5 text-zinc-500" /> Exam Quiz
                     </span>
-                    <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-md bg-zinc-100 text-zinc-700">
-                      <Play className="w-3.5 h-3.5 text-zinc-500" /> Audio 52m
+                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-zinc-100 text-zinc-800">
+                      <Play className="w-3.5 h-3.5 text-amber-600" /> 48m Audio
                     </span>
                   </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ================= HARDWARE SPECIFICATION SECTION ================= */}
+        <section id="device" className="py-24 bg-white border-b border-zinc-200/70">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center max-w-2xl mx-auto mb-16">
+              <span className="text-xs font-bold uppercase tracking-widest text-amber-800">
+                Acoustic Hardware Engineering
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-zinc-950 mt-2 tracking-tight">
+                The Dedicated LecturePod Device
+              </h2>
+              <p className="text-zinc-600 text-sm mt-3 leading-relaxed">
+                Engineered specifically for lecture halls, laboratories, and seminar rooms. Never drain your phone battery or worry about missing crucial exam hints.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {/* Card 1 */}
+              <div className="p-7 bg-[#F8F9FA] rounded-3xl border border-zinc-200/80 shadow-xs flex flex-col justify-between">
+                <div>
+                  <div className="w-12 h-12 rounded-2xl bg-zinc-950 text-amber-400 flex items-center justify-center mb-5 ring-1 ring-zinc-800 shadow-sm">
+                    <WifiOff className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-base font-bold text-zinc-950">100% Offline Recording</h3>
+                  <p className="text-xs text-zinc-600 mt-2 leading-relaxed">
+                    Operates flawlessly in signal-dead basement halls. Recordings are encrypted and cached safely on the device&apos;s high-endurance local queue.
+                  </p>
+                </div>
+                <div className="mt-6 pt-4 border-t border-zinc-200/60 text-xs font-semibold text-zinc-500 flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Zero data loss guarantee
+                </div>
+              </div>
+
+              {/* Card 2 */}
+              <div className="p-7 bg-[#F8F9FA] rounded-3xl border border-zinc-200/80 shadow-xs flex flex-col justify-between">
+                <div>
+                  <div className="w-12 h-12 rounded-2xl bg-zinc-950 text-amber-400 flex items-center justify-center mb-5 ring-1 ring-zinc-800 shadow-sm">
+                    <Wifi className="w-6 h-6 text-emerald-400" />
+                  </div>
+                  <h3 className="text-base font-bold text-zinc-950">Intelligent Auto-Sync</h3>
+                  <p className="text-xs text-zinc-600 mt-2 leading-relaxed">
+                    As soon as your phone hotspot, campus Wi-Fi, or home network comes within range, the LecturePod Device syncs all audio in the background without user intervention.
+                  </p>
+                </div>
+                <div className="mt-6 pt-4 border-t border-zinc-200/60 text-xs font-semibold text-zinc-500 flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Idempotent upload contract
+                </div>
+              </div>
+
+              {/* Card 3 */}
+              <div className="p-7 bg-[#F8F9FA] rounded-3xl border border-zinc-200/80 shadow-xs flex flex-col justify-between">
+                <div>
+                  <div className="w-12 h-12 rounded-2xl bg-zinc-950 text-amber-400 flex items-center justify-center mb-5 ring-1 ring-zinc-800 shadow-sm">
+                    <Fingerprint className="w-6 h-6 text-amber-400" />
+                  </div>
+                  <h3 className="text-base font-bold text-zinc-950">Cryptographic Pairing</h3>
+                  <p className="text-xs text-zinc-600 mt-2 leading-relaxed">
+                    Link your physical device in seconds using a one-time 6-character code. Your audio recordings are isolated strictly to your student account.
+                  </p>
+                </div>
+                <div className="mt-6 pt-4 border-t border-zinc-200/60 text-xs font-semibold text-zinc-500 flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Encrypted device secrets
                 </div>
               </div>
             </div>
@@ -155,275 +262,138 @@ export default function LandingPage() {
         </section>
 
         {/* ================= HOW IT WORKS ================= */}
-        <section id="how-it-works" className="py-20 bg-white border-b border-zinc-200">
+        <section id="how-it-works" className="py-24 bg-[#F8F9FA] border-b border-zinc-200/70">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-2xl mx-auto mb-16">
-              <span className="text-xs font-bold uppercase tracking-wider text-amber-700">
-                Autonomous Workflow
+              <span className="text-xs font-bold uppercase tracking-widest text-amber-800">
+                End-to-End Workflow
               </span>
-              <h2 className="text-3xl font-bold text-zinc-900 mt-2">
-                From Classroom Audio to Exam Prep in 4 Steps
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-zinc-950 mt-2 tracking-tight">
+                From Classroom Voice to Midterm Mastery
               </h2>
-              <p className="text-zinc-600 text-sm mt-2">
-                No manual uploading each day. The physical pod handles recording and syncing autonomously.
+              <p className="text-zinc-600 text-sm mt-3">
+                No manual uploading each day. The system takes care of the friction.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-              {/* Step 1 */}
-              <div className="relative p-6 rounded-2xl bg-zinc-50 border border-zinc-200 flex flex-col justify-between">
-                <div>
-                  <div className="w-10 h-10 rounded-xl bg-zinc-900 text-amber-400 flex items-center justify-center font-bold text-sm mb-4">
-                    01
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              {[
+                {
+                  step: '01',
+                  title: 'Record',
+                  desc: 'One press on your LecturePod Device starts recording. High-fidelity audio is preserved locally even in dead zones.',
+                  badge: 'Offline-First Audio',
+                },
+                {
+                  step: '02',
+                  title: 'Sync',
+                  desc: 'Detects Wi-Fi or phone hotspot automatically. Audio uploads securely with server checksum verification.',
+                  badge: 'Automatic Sync',
+                },
+                {
+                  step: '03',
+                  title: 'Transcribe',
+                  desc: 'Processes technical jargon across English, Hindi, and Hinglish. Timestamps anchor every sentence to the audio.',
+                  badge: 'Multilingual AI',
+                },
+                {
+                  step: '04',
+                  title: 'Master',
+                  desc: 'Review structured markdown notes, practice 3D flashcards, take exam quizzes, and print revision sheets.',
+                  badge: 'Ready for Exams',
+                },
+              ].map((item, idx) => (
+                <div key={idx} className="p-6 bg-white rounded-3xl border border-zinc-200/80 shadow-xs flex flex-col justify-between">
+                  <div>
+                    <span className="w-10 h-10 rounded-2xl bg-zinc-950 text-amber-400 flex items-center justify-center font-bold text-xs mb-4 shadow-sm">
+                      {item.step}
+                    </span>
+                    <h3 className="text-base font-bold text-zinc-950">{item.title}</h3>
+                    <p className="text-xs text-zinc-600 mt-2 leading-relaxed">{item.desc}</p>
                   </div>
-                  <h3 className="text-lg font-bold text-zinc-900">Record</h3>
-                  <p className="text-xs text-zinc-600 mt-2 leading-relaxed">
-                    Student turns on the Lecture Pod device in class. It records high-fidelity audio locally on the Raspberry Pi 4 MicroSD card, even with zero internet or phone reception.
-                  </p>
-                </div>
-                <div className="mt-4 pt-3 border-t border-zinc-200/60 flex items-center gap-1.5 text-xs text-zinc-500">
-                  <WifiOff className="w-3.5 h-3.5" /> 100% Offline Capable
-                </div>
-              </div>
-
-              {/* Step 2 */}
-              <div className="relative p-6 rounded-2xl bg-zinc-50 border border-zinc-200 flex flex-col justify-between">
-                <div>
-                  <div className="w-10 h-10 rounded-xl bg-zinc-900 text-amber-400 flex items-center justify-center font-bold text-sm mb-4">
-                    02
+                  <div className="mt-5 pt-3 border-t border-zinc-100 text-[11px] font-semibold text-zinc-600">
+                    &bull; {item.badge}
                   </div>
-                  <h3 className="text-lg font-bold text-zinc-900">Sync</h3>
-                  <p className="text-xs text-zinc-600 mt-2 leading-relaxed">
-                    When campus Wi-Fi, home internet, or your phone hotspot becomes available, the device agent detects the connection and auto-syncs recordings with idempotent verification.
-                  </p>
                 </div>
-                <div className="mt-4 pt-3 border-t border-zinc-200/60 flex items-center gap-1.5 text-xs text-zinc-500">
-                  <Wifi className="w-3.5 h-3.5 text-emerald-600" /> Automatic Background Sync
-                </div>
-              </div>
-
-              {/* Step 3 */}
-              <div className="relative p-6 rounded-2xl bg-zinc-50 border border-zinc-200 flex flex-col justify-between">
-                <div>
-                  <div className="w-10 h-10 rounded-xl bg-zinc-900 text-amber-400 flex items-center justify-center font-bold text-sm mb-4">
-                    03
-                  </div>
-                  <h3 className="text-lg font-bold text-zinc-900">Understand</h3>
-                  <p className="text-xs text-zinc-600 mt-2 leading-relaxed">
-                    The platform processes audio using configured speech-to-text models, supporting English, Hindi, and Hinglish lectures. Timestamps anchor every phrase to the original audio.
-                  </p>
-                </div>
-                <div className="mt-4 pt-3 border-t border-zinc-200/60 flex items-center gap-1.5 text-xs text-zinc-500">
-                  <Sparkles className="w-3.5 h-3.5 text-amber-600" /> Multilingual AI Transcription
-                </div>
-              </div>
-
-              {/* Step 4 */}
-              <div className="relative p-6 rounded-2xl bg-zinc-50 border border-zinc-200 flex flex-col justify-between">
-                <div>
-                  <div className="w-10 h-10 rounded-xl bg-zinc-900 text-amber-400 flex items-center justify-center font-bold text-sm mb-4">
-                    04
-                  </div>
-                  <h3 className="text-lg font-bold text-zinc-900">Revise</h3>
-                  <p className="text-xs text-zinc-600 mt-2 leading-relaxed">
-                    Access executive summaries, structured editable notes, key formulas, interactive flashcards, practice quizzes, and concise printable revision sheets directly on your dashboard.
-                  </p>
-                </div>
-                <div className="mt-4 pt-3 border-t border-zinc-200/60 flex items-center gap-1.5 text-xs text-zinc-500">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Complete Study Kits
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         </section>
 
         {/* ================= FEATURES SECTION ================= */}
-        <section id="features" className="py-20 bg-[#FAFAFA] border-b border-zinc-200">
+        <section id="features" className="py-24 bg-white border-b border-zinc-200/70">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-2xl mx-auto mb-16">
-              <span className="text-xs font-bold uppercase tracking-wider text-amber-700">
-                Engineered for Students
+              <span className="text-xs font-bold uppercase tracking-widest text-amber-800">
+                Study Platform
               </span>
-              <h2 className="text-3xl font-bold text-zinc-900 mt-2">
-                Everything You Need to Ace Your Exams
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-zinc-950 mt-2 tracking-tight">
+                Designed for Serious Academic Workloads
               </h2>
-              <p className="text-zinc-600 text-sm mt-2">
-                A focused, distraction-free SaaS workspace built for real academic workloads.
-              </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {/* Feature 1 */}
-              <div className="p-6 bg-white rounded-2xl border border-zinc-200 shadow-xs">
-                <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center mb-4">
-                  <HardDrive className="w-5 h-5" />
-                </div>
-                <h3 className="text-base font-bold text-zinc-900">Zero-Loss Offline Recording</h3>
-                <p className="text-xs text-zinc-600 mt-2 leading-relaxed">
-                  Basement lecture halls with no cellular service? No problem. The local queue guarantees that no lecture is ever lost. Files remain safe until the server verifies receipt.
-                </p>
-              </div>
-
-              {/* Feature 2 */}
-              <div className="p-6 bg-white rounded-2xl border border-zinc-200 shadow-xs">
-                <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center mb-4">
+              <div className="p-7 bg-[#F8F9FA] rounded-3xl border border-zinc-200/80 shadow-xs space-y-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center mb-4">
                   <FileText className="w-5 h-5" />
                 </div>
-                <h3 className="text-base font-bold text-zinc-900">Structured AI Notes & Revision Sheets</h3>
-                <p className="text-xs text-zinc-600 mt-2 leading-relaxed">
-                  Clear headings, key definitions, real-world examples, and mathematical equations synthesized directly from your professor&apos;s spoken words. Editable with live autosave.
+                <h3 className="text-base font-bold text-zinc-950">Structured AI Notes</h3>
+                <p className="text-xs text-zinc-600 leading-relaxed">
+                  Headings, mathematical definitions, practical examples, and exam takeaways synthesized straight from professor explanations. Editable with live autosave.
                 </p>
               </div>
 
-              {/* Feature 3 */}
-              <div className="p-6 bg-white rounded-2xl border border-zinc-200 shadow-xs">
-                <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center mb-4">
+              <div className="p-7 bg-[#F8F9FA] rounded-3xl border border-zinc-200/80 shadow-xs space-y-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center mb-4">
                   <Layers className="w-5 h-5" />
                 </div>
-                <h3 className="text-base font-bold text-zinc-900">Spaced Repetition Flashcards</h3>
-                <p className="text-xs text-zinc-600 mt-2 leading-relaxed">
-                  Interactive 3D flashcards with mastery tracking. Mark concepts as difficult or mastered to optimize your study sessions before midterms and finals.
+                <h3 className="text-base font-bold text-zinc-950">Spaced Repetition Flashcards</h3>
+                <p className="text-xs text-zinc-600 leading-relaxed">
+                  Interactive 3D flip cards with mastery progress tracking. Mark concepts as difficult or mastered to focus study time where it matters most.
                 </p>
               </div>
 
-              {/* Feature 4 */}
-              <div className="p-6 bg-white rounded-2xl border border-zinc-200 shadow-xs">
-                <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center mb-4">
+              <div className="p-7 bg-[#F8F9FA] rounded-3xl border border-zinc-200/80 shadow-xs space-y-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center mb-4">
                   <HelpCircle className="w-5 h-5" />
                 </div>
-                <h3 className="text-base font-bold text-zinc-900">Exam-Focused Quizzes</h3>
-                <p className="text-xs text-zinc-600 mt-2 leading-relaxed">
-                  Multiple-choice quizzes generated from your syllabus. Immediate scoring, detailed explanations for every answer option, and stored attempt history.
-                </p>
-              </div>
-
-              {/* Feature 5 */}
-              <div className="p-6 bg-white rounded-2xl border border-zinc-200 shadow-xs">
-                <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center mb-4">
-                  <Search className="w-5 h-5" />
-                </div>
-                <h3 className="text-base font-bold text-zinc-900">Global Transcript & Concept Search</h3>
-                <p className="text-xs text-zinc-600 mt-2 leading-relaxed">
-                  Search across your entire semester. Instantly pinpoint the exact second your professor explained a theorem or gave a hint about an upcoming exam question.
-                </p>
-              </div>
-
-              {/* Feature 6 */}
-              <div className="p-6 bg-white rounded-2xl border border-zinc-200 shadow-xs">
-                <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center mb-4">
-                  <Cpu className="w-5 h-5" />
-                </div>
-                <h3 className="text-base font-bold text-zinc-900">Real Raspberry Pi 4 Device Telemetry</h3>
-                <p className="text-xs text-zinc-600 mt-2 leading-relaxed">
-                  Real heartbeats, IP detection, queue counters, and diagnostics. No fabricated connectivity statuses or fake checkmarks.
+                <h3 className="text-base font-bold text-zinc-950">Transcript-Derived Quizzes</h3>
+                <p className="text-xs text-zinc-600 leading-relaxed">
+                  Multiple-choice exam simulations derived directly from the lecture transcript. Instant scoring and detailed explanations for every single choice.
                 </p>
               </div>
             </div>
           </div>
         </section>
 
-        {/* ================= HARDWARE INTEGRATION SECTION ================= */}
-        <section id="device" className="py-20 bg-white border-b border-zinc-200">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-              <div>
-                <span className="text-xs font-bold uppercase tracking-wider text-amber-700">
-                  Physical Hardware
-                </span>
-                <h2 className="text-3xl font-bold text-zinc-900 mt-2">
-                  Built for Raspberry Pi 4 Model B
-                </h2>
-                <p className="text-zinc-600 text-sm mt-4 leading-relaxed">
-                  The Lecture Pod agent is a lightweight, robust Python service that runs natively on Raspberry Pi OS. It uses SQLite for local offline queue management, monitors network reachability, and implements an exponential backoff sync retry protocol.
-                </p>
-
-                <div className="mt-6 space-y-3">
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
-                    <span className="text-xs text-zinc-700">
-                      <strong>Cryptographic Device Pairing:</strong> Link device via 6-character token from your dashboard.
-                    </span>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
-                    <span className="text-xs text-zinc-700">
-                      <strong>Idempotent Upload Contract:</strong> Prevents duplicate lecture creation during network hiccups.
-                    </span>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
-                    <span className="text-xs text-zinc-700">
-                      <strong>Safe Retention Policy:</strong> Recordings are never purged locally until the server confirms integrity.
-                    </span>
-                  </div>
-                </div>
-
-                <div className="mt-8">
-                  <Link
-                    href="/devices"
-                    className="inline-flex items-center gap-2 text-sm font-semibold text-zinc-900 hover:text-amber-700 transition"
-                  >
-                    View Device Pairing Protocol <ArrowRight className="w-4 h-4" />
-                  </Link>
-                </div>
-              </div>
-
-              {/* Terminal Code Snippet */}
-              <div className="bg-zinc-950 rounded-2xl p-6 text-zinc-300 font-mono text-xs border border-zinc-800 shadow-xl overflow-x-auto">
-                <div className="flex items-center gap-2 pb-4 mb-4 border-b border-zinc-800 text-zinc-500">
-                  <div className="w-2.5 h-2.5 rounded-full bg-rose-500" />
-                  <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                  <span className="ml-2 text-zinc-400">pi@raspberrypi:~ $</span>
-                </div>
-                <div className="space-y-2 text-zinc-300">
-                  <p className="text-zinc-500"># Pair device to student account</p>
-                  <p className="text-amber-400">
-                    python3 lecturepod_agent.py pair --code LP-8842 --server https://your-server.com
-                  </p>
-                  <p className="text-emerald-400 font-semibold">[SUCCESS] Device LP-PI4-A82F paired to student account.</p>
-                  
-                  <p className="text-zinc-500 pt-2"># Record lecture completely offline</p>
-                  <p className="text-amber-400">
-                    python3 lecturepod_agent.py record --title &quot;Thermodynamics&quot; --subject &quot;Physics&quot; --duration 3600
-                  </p>
-                  <p className="text-zinc-400">[LecturePod-Pi] Recording saved locally to queue (REC-1718-289.wav)</p>
-                  <p className="text-zinc-400">[LecturePod-Pi] Auto-sync: Network detected! Uploading to server...</p>
-                  <p className="text-emerald-400 font-semibold">[SUCCESS] Server ACK received. Sync verified.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ================= PRIVACY & SECURITY SECTION ================= */}
-        <section id="privacy" className="py-20 bg-[#FAFAFA] border-b border-zinc-200">
+        {/* ================= PRIVACY SECTION ================= */}
+        <section id="privacy" className="py-24 bg-[#F8F9FA] border-b border-zinc-200/70">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <div className="w-12 h-12 rounded-2xl bg-zinc-900 text-amber-400 flex items-center justify-center mx-auto mb-4">
-              <ShieldCheck className="w-6 h-6" />
+            <div className="w-14 h-14 rounded-3xl bg-zinc-950 text-amber-400 flex items-center justify-center mx-auto mb-5 ring-1 ring-zinc-800 shadow-md">
+              <ShieldCheck className="w-7 h-7" />
             </div>
-            <h2 className="text-3xl font-bold text-zinc-900">Privacy & Data Isolation First</h2>
+            <h2 className="text-3xl font-extrabold text-zinc-950 tracking-tight">Your Classroom Audio is Private</h2>
             <p className="text-zinc-600 text-sm mt-3 max-w-xl mx-auto leading-relaxed">
-              Your classroom recordings and personal study materials belong exclusively to you. We enforce rigorous database Row Level Security and cryptographic authorization.
+              Every lecture recording, transcript, and note is cryptographically isolated to your student account with Row-Level Security. No student can ever search or access another student&apos;s audio.
             </p>
 
-            <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-6 text-left">
-              <div className="p-5 bg-white border border-zinc-200 rounded-xl">
-                <h4 className="text-sm font-semibold text-zinc-900">User-Specific Isolation</h4>
-                <p className="text-xs text-zinc-600 mt-1">
-                  Every query verifies your identity. No student can view, search, or access another student&apos;s audio or notes.
+            <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-5 text-left">
+              <div className="p-5 bg-white border border-zinc-200/80 rounded-2xl shadow-xs">
+                <h4 className="text-xs font-bold text-zinc-950">User Isolation</h4>
+                <p className="text-[11px] text-zinc-600 mt-1">
+                  Enforced server-side. Zero cross-account data leakage.
                 </p>
               </div>
-              <div className="p-5 bg-white border border-zinc-200 rounded-xl">
-                <h4 className="text-sm font-semibold text-zinc-900">Hashed Credentials</h4>
-                <p className="text-xs text-zinc-600 mt-1">
-                  Device API keys and student passwords are cryptographically salted and hashed. Plaintext secrets are never stored.
+              <div className="p-5 bg-white border border-zinc-200/80 rounded-2xl shadow-xs">
+                <h4 className="text-xs font-bold text-zinc-950">Hashed Secrets</h4>
+                <p className="text-[11px] text-zinc-600 mt-1">
+                  Device API tokens use salted HMAC-SHA256 signatures.
                 </p>
               </div>
-              <div className="p-5 bg-white border border-zinc-200 rounded-xl">
-                <h4 className="text-sm font-semibold text-zinc-900">Full Data Export</h4>
-                <p className="text-xs text-zinc-600 mt-1">
-                  One-click export of your complete lecture transcripts, notes, flashcards, and quiz attempts in open JSON format.
+              <div className="p-5 bg-white border border-zinc-200/80 rounded-2xl shadow-xs">
+                <h4 className="text-xs font-bold text-zinc-950">Open Data Export</h4>
+                <p className="text-[11px] text-zinc-600 mt-1">
+                  One-click full JSON backup of all your notes, flashcards, and quizzes.
                 </p>
               </div>
             </div>
@@ -431,51 +401,42 @@ export default function LandingPage() {
         </section>
 
         {/* ================= FAQ SECTION ================= */}
-        <section id="faq" className="py-20 bg-white border-b border-zinc-200">
+        <section id="faq" className="py-24 bg-white border-b border-zinc-200/70">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
-              <span className="text-xs font-bold uppercase tracking-wider text-amber-700">
-                Common Questions
+            <div className="text-center mb-14">
+              <span className="text-xs font-bold uppercase tracking-widest text-amber-800">
+                Clarifications
               </span>
-              <h2 className="text-3xl font-bold text-zinc-900 mt-2">
+              <h2 className="text-3xl font-extrabold text-zinc-950 mt-2 tracking-tight">
                 Frequently Asked Questions
               </h2>
             </div>
 
             <div className="space-y-4">
-              <div className="p-5 rounded-xl border border-zinc-200 bg-zinc-50">
-                <h4 className="text-sm font-semibold text-zinc-900">
-                  What happens if my classroom has zero internet or cell reception?
+              <div className="p-6 rounded-2xl border border-zinc-200/80 bg-[#F8F9FA]">
+                <h4 className="text-sm font-bold text-zinc-950">
+                  What is the LecturePod Device?
                 </h4>
                 <p className="text-xs text-zinc-600 mt-2 leading-relaxed">
-                  The Raspberry Pi 4 stores your recordings locally in its SQLite queue. As soon as you step into the library, your dorm, or turn on your mobile hotspot, the agent automatically detects the connection and syncs all pending lectures.
+                  The LecturePod Device is a dedicated, compact acoustic capture unit that students carry to classroom lectures. It captures crystal-clear audio, buffers recordings offline, and syncs automatically whenever an authorized connection becomes available.
                 </p>
               </div>
 
-              <div className="p-5 rounded-xl border border-zinc-200 bg-zinc-50">
-                <h4 className="text-sm font-semibold text-zinc-900">
-                  Does Lecture Pod support mixed Hindi and English (Hinglish) lectures?
+              <div className="p-6 rounded-2xl border border-zinc-200/80 bg-[#F8F9FA]">
+                <h4 className="text-sm font-bold text-zinc-950">
+                  Does the LecturePod Device require Wi-Fi during the lecture?
                 </h4>
                 <p className="text-xs text-zinc-600 mt-2 leading-relaxed">
-                  Yes. The platform supports English, Hindi, and Hinglish lectures through configured speech-to-text models like Whisper and Groq, accurately capturing technical terms alongside Hindi explanations.
+                  No. It is built completely offline-first. It preserves your recordings on local storage and only uploads when you reconnect to Wi-Fi, your phone hotspot, or your home network.
                 </p>
               </div>
 
-              <div className="p-5 rounded-xl border border-zinc-200 bg-zinc-50">
-                <h4 className="text-sm font-semibold text-zinc-900">
-                  Can I use the web platform without a physical Raspberry Pi 4?
+              <div className="p-6 rounded-2xl border border-zinc-200/80 bg-[#F8F9FA]">
+                <h4 className="text-sm font-bold text-zinc-950">
+                  Does LecturePod support mixed Hindi and English (Hinglish)?
                 </h4>
                 <p className="text-xs text-zinc-600 mt-2 leading-relaxed">
-                  Yes! You can manually upload audio recordings or explore with our built-in sample demo lectures to test transcription, notes, flashcards, and quizzes immediately.
-                </p>
-              </div>
-
-              <div className="p-5 rounded-xl border border-zinc-200 bg-zinc-50">
-                <h4 className="text-sm font-semibold text-zinc-900">
-                  How does the system prevent duplicate lectures if Wi-Fi disconnects mid-upload?
-                </h4>
-                <p className="text-xs text-zinc-600 mt-2 leading-relaxed">
-                  Every recording generates a unique `device_recording_id` before transmission. The server uses this key for idempotent registration, ensuring duplicate retries update the same lecture rather than creating clones.
+                  Yes! The platform is designed to handle multilingual classroom speech, preserving technical English terms alongside Hindi explanations accurately.
                 </p>
               </div>
             </div>
@@ -484,26 +445,26 @@ export default function LandingPage() {
       </main>
 
       {/* ================= FOOTER ================= */}
-      <footer className="bg-white border-t border-zinc-200 py-12">
+      <footer className="bg-white py-12 border-t border-zinc-200/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-zinc-900 flex items-center justify-center text-white">
-              <Mic2 className="w-3.5 h-3.5 text-amber-400" />
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-zinc-950 flex items-center justify-center text-white">
+              <Mic2 className="w-4 h-4 text-amber-400" />
             </div>
-            <span className="font-semibold text-sm text-zinc-900">LecturePod</span>
+            <span className="font-bold text-sm text-zinc-950">LecturePod</span>
             <span className="text-xs text-zinc-600 ml-2">
-              © {new Date().getFullYear()} Lecture Pod. All rights reserved.
+              &copy; {new Date().getFullYear()} LecturePod. Studio-Grade Learning Platform.
             </span>
           </div>
 
           <div className="flex items-center gap-6 text-xs text-zinc-600">
-            <Link href="#privacy" className="hover:text-zinc-900 transition">
+            <Link href="#privacy" className="hover:text-zinc-950 transition">
               Privacy Policy
             </Link>
-            <Link href="#features" className="hover:text-zinc-900 transition">
-              Security
+            <Link href="#device" className="hover:text-zinc-950 transition">
+              LecturePod Device
             </Link>
-            <Link href="/login" className="hover:text-zinc-900 transition">
+            <Link href="/login" className="hover:text-zinc-950 transition">
               Student Sign In
             </Link>
           </div>

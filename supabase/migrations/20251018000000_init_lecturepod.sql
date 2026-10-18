@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 2. Devices (Raspberry Pi 4 recording hardware)
+-- 2. Devices (LecturePod Device recording hardware)
 CREATE TABLE IF NOT EXISTS public.devices (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS public.devices (
   queued_recordings INT DEFAULT 0,
   upload_progress_pct INT DEFAULT 0,
   ip_address TEXT,
-  firmware_version TEXT DEFAULT 'v1.2.0-rpi4',
+  firmware_version TEXT DEFAULT 'v1.2.0-lp',
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );

@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { StudentNav } from '@/components/StudentNav';
+import { StudentLayout } from '@/components/StudentLayout';
 import { StatusBadge } from '@/components/StatusBadge';
 import { 
   Search, 
@@ -22,7 +22,18 @@ import {
   Sparkles,
   Loader2,
   X,
-  AlertCircle
+  AlertCircle,
+  Zap,
+  Volume2,
+  FileText,
+  HelpCircle,
+  Layers,
+  Bot,
+  ChevronRight,
+  Send,
+  CheckCircle2,
+  BookOpen,
+  ArrowRight
 } from 'lucide-react';
 
 interface Lecture {
@@ -49,6 +60,10 @@ function LecturesPageContent() {
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<any>(null);
 
+  // PW-Style Active Offering Tab: all | audios | notes | practice | flashcards | mentor
+  const initialTab = searchParams.get('tab') || 'all';
+  const [activeOfferingTab, setActiveOfferingTab] = useState<string>(initialTab);
+
   // Filters & layout state
   const [layout, setLayout] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
@@ -56,26 +71,45 @@ function LecturesPageContent() {
   const [selectedStatus, setSelectedStatus] = useState('');
   const [sortOrder, setSortOrder] = useState('newest');
 
+  // AI Mentor Chat State
+  const [mentorLectureId, setMentorLectureId] = useState<string>('');
+  const [mentorQuestion, setMentorQuestion] = useState<string>('');
+  const [mentorLoading, setMentorLoading] = useState<boolean>(false);
+  const [mentorMessages, setMentorMessages] = useState<Array<{ role: 'user' | 'assistant'; text: string; time?: string }>>([
+    {
+      role: 'assistant',
+      text: 'Namaste! Main hoon aapka **LecturePod AI Mentor**. Apne recorded lectures mein se koi bhi doubt, formula, ya conceptual derivation poochhiye — main step-by-step explain karunga!',
+      time: 'Just now'
+    }
+  ]);
+
   // Modal states
   const [showAddModal, setShowAddModal] = useState(searchParams.get('new') === 'true');
-  const [editLecture, setEditLecture] = useState<Lecture | null>(null);
-  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
-
-  // Form states for adding/editing
   const [formTitle, setFormTitle] = useState('');
   const [formSubject, setFormSubject] = useState('');
   const [formDescription, setFormDescription] = useState('');
-  const [formAudioFile, setFormAudioFile] = useState<File | null>(null);
+  const [formTags, setFormTags] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+
+  // Edit modal
+  const [editLecture, setEditLecture] = useState<Lecture | null>(null);
+
+  // Delete modal
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+
+  // Demo simulator state
+  const [simulatingSync, setSimulatingSync] = useState(false);
+  const [bannerNotice, setBannerNotice] = useState<string | null>(null);
 
   const fetchLectures = useCallback(async () => {
     try {
       const params = new URLSearchParams();
-      if (searchQuery) params.set('q', searchQuery);
-      if (selectedSubject) params.set('subject', selectedSubject);
-      if (selectedStatus) params.set('status', selectedStatus);
-      if (sortOrder) params.set('sort', sortOrder);
+      if (searchQuery) params.append('q', searchQuery);
+      if (selectedSubject) params.append('subject', selectedSubject);
+      if (selectedStatus) params.append('status', selectedStatus);
+      if (sortOrder) params.append('sort', sortOrder);
 
       const res = await fetch(`/api/lectures?${params.toString()}`);
       if (res.status === 401) {
@@ -85,12 +119,15 @@ function LecturesPageContent() {
       const data = await res.json();
       setLectures(data.lectures || []);
       setSubjects(data.subjects || []);
-    } catch (e) {
-      console.error(e);
+      if (!mentorLectureId && data.lectures?.length > 0) {
+        setMentorLectureId(data.lectures[0].id);
+      }
+    } catch (err) {
+      console.error(err);
     } finally {
       setLoading(false);
     }
-  }, [searchQuery, selectedSubject, selectedStatus, sortOrder, router]);
+  }, [searchQuery, selectedSubject, selectedStatus, sortOrder, router, mentorLectureId]);
 
   useEffect(() => {
     fetch('/api/auth/me')
@@ -101,17 +138,84 @@ function LecturesPageContent() {
     fetchLectures();
   }, [fetchLectures]);
 
-  const handleCreateLecture = async (e: React.FormEvent) => {
+  const handleSimulateSync = async () => {
+    setSimulatingSync(true);
+    try {
+      const res = await fetch('/api/demo/simulate-sync', { method: 'POST' });
+      const data = await res.json();
+      if (res.ok) {
+        setBannerNotice(data.message || 'Simulated lecture captured & AI study kit generated!');
+        fetchLectures();
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setSimulatingSync(false);
+    }
+  };
+
+  const handleSendMentorQuestion = async (qText?: string) => {
+    const textToSend = qText || mentorQuestion;
+    if (!textToSend.trim() || mentorLoading) return;
+
+    const userMsg = { role: 'user' as const, text: textToSend, time: 'Just now' };
+    setMentorMessages(prev => [...prev, userMsg]);
+    if (!qText) setMentorQuestion('');
+    setMentorLoading(true);
+
+    try {
+      const res = await fetch('/api/mentor', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          lectureId: mentorLectureId,
+          question: textToSend,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setMentorMessages(prev => [
+          ...prev,
+          { role: 'assistant', text: data.answer, time: 'Just now' }
+        ]);
+      } else {
+        setMentorMessages(prev => [
+          ...prev,
+          { role: 'assistant', text: data.error || 'Doubt clear karne mein error aaya. Kripya punah prayas karein.', time: 'Just now' }
+        ]);
+      }
+    } catch (e) {
+      setMentorMessages(prev => [
+        ...prev,
+        { role: 'assistant', text: 'Network connection issue. Please retry.', time: 'Just now' }
+      ]);
+    } finally {
+      setMentorLoading(false);
+    }
+  };
+
+  const handleCreateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
+    if (!formTitle.trim()) {
+      setFormError('Lecture title is required');
+      return;
+    }
+    if (!formSubject.trim()) {
+      setFormError('Subject is required');
+      return;
+    }
     setSubmitting(true);
 
     try {
       const formData = new FormData();
       formData.append('title', formTitle);
       formData.append('subject', formSubject);
-      if (formDescription) formData.append('description', formDescription);
-      if (formAudioFile) formData.append('audio', formAudioFile);
+      formData.append('description', formDescription);
+      formData.append('tags', formTags);
+      if (selectedFile) {
+        formData.append('audio', selectedFile);
+      }
 
       const res = await fetch('/api/lectures', {
         method: 'POST',
@@ -119,13 +223,16 @@ function LecturesPageContent() {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to create lecture');
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to create lecture');
+      }
 
       setShowAddModal(false);
       setFormTitle('');
       setFormSubject('');
       setFormDescription('');
-      setFormAudioFile(null);
+      setFormTags('');
+      setSelectedFile(null);
       fetchLectures();
     } catch (err: any) {
       setFormError(err.message);
@@ -134,11 +241,10 @@ function LecturesPageContent() {
     }
   };
 
-  const handleUpdateLecture = async (e: React.FormEvent) => {
+  const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editLecture) return;
     setSubmitting(true);
-
     try {
       const res = await fetch(`/api/lectures/${editLecture.id}`, {
         method: 'PATCH',
@@ -149,12 +255,12 @@ function LecturesPageContent() {
           description: formDescription,
         }),
       });
-
-      if (!res.ok) throw new Error('Update failed');
-      setEditLecture(null);
-      fetchLectures();
-    } catch (err: any) {
-      setFormError(err.message);
+      if (res.ok) {
+        setEditLecture(null);
+        fetchLectures();
+      }
+    } catch (err) {
+      console.error(err);
     } finally {
       setSubmitting(false);
     }
@@ -164,17 +270,6 @@ function LecturesPageContent() {
     try {
       await fetch(`/api/lectures/${id}`, { method: 'DELETE' });
       setDeleteConfirmId(null);
-      fetchLectures();
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handleRetryProcessing = async (id: string, e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    try {
-      await fetch(`/api/lectures/${id}/process`, { method: 'POST' });
       fetchLectures();
     } catch (err) {
       console.error(err);
@@ -201,405 +296,616 @@ function LecturesPageContent() {
     });
   };
 
-  return (
-    <div className="min-h-screen bg-[#FAFAFA] flex flex-col">
-      <StudentNav user={currentUser} />
+  const readyLectures = lectures.filter(l => l.status === 'ready');
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+  return (
+    <StudentLayout user={currentUser} workspace="study" breadcrumbs={[{ label: 'Study Library' }]}>
+      <div className="space-y-6">
+        {/* Notice */}
+        {bannerNotice && (
+          <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 flex items-center justify-between text-xs font-semibold text-amber-900 dark:text-amber-200 animate-in fade-in">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-amber-500" />
+              <span>{bannerNotice}</span>
+            </div>
+            <button onClick={() => setBannerNotice(null)} className="font-bold hover:underline">Dismiss</button>
+          </div>
+        )}
+
         {/* Header Bar */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-zinc-200 gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-zinc-200/80 dark:border-zinc-800/80 gap-4">
           <div>
-            <h1 className="text-2xl font-extrabold text-zinc-900 tracking-tight">
-              Classroom Lecture Library
+            <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-widest bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 mb-1.5">
+              <span>ACADEMIC STUDY PORTAL</span>
+            </div>
+            <h1 className="text-2xl font-extrabold text-zinc-950 dark:text-white tracking-tight">
+              Classroom Study Library
             </h1>
-            <p className="text-xs text-zinc-500 mt-1">
-              Search, filter, replay recordings, and review AI study kits
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+              Explore your classroom recordings with PW-style audios, notes, practice problems, flashcards, and AI doubt solver.
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <button
+              onClick={handleSimulateSync}
+              disabled={simulatingSync}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-zinc-950 bg-amber-400 hover:bg-amber-300 rounded-xl transition shadow-xs disabled:opacity-50"
+              title="Simulate a new classroom lecture upload from hardware"
+            >
+              <Zap className="w-3.5 h-3.5 text-zinc-950" />
+              {simulatingSync ? 'Syncing...' : 'Simulate Audio Sync'}
+            </button>
+
             <button
               onClick={() => {
                 setFormTitle('');
                 setFormSubject('');
                 setFormDescription('');
+                setFormTags('');
+                setSelectedFile(null);
+                setFormError(null);
                 setShowAddModal(true);
               }}
-              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-zinc-900 hover:bg-zinc-800 rounded-lg shadow-xs transition"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-zinc-950 dark:bg-white dark:text-zinc-950 rounded-xl transition shadow-xs"
             >
-              <PlusCircle className="w-3.5 h-3.5 text-amber-400" />
-              Add Recording
+              <PlusCircle className="w-3.5 h-3.5" />
+              <span>Upload Recording</span>
             </button>
           </div>
         </div>
 
-        {/* Filter & Search Bar */}
-        <div className="bg-white p-4 rounded-xl border border-zinc-200 shadow-2xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
-          {/* Search Box */}
-          <div className="relative flex-1">
-            <Search className="w-4 h-4 absolute left-3 top-3 text-zinc-400" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by title, subject, tags, or transcript..."
-              className="w-full pl-9 pr-4 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-xs text-zinc-900 focus:outline-hidden focus:border-amber-600 transition"
-            />
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Subject Filter */}
-            <select
-              value={selectedSubject}
-              onChange={(e) => setSelectedSubject(e.target.value)}
-              className="px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-xs text-zinc-700 focus:outline-hidden focus:border-amber-600"
-            >
-              <option value="">All Subjects</option>
-              {subjects.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
-
-            {/* Status Filter */}
-            <select
-              value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
-              className="px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-xs text-zinc-700 focus:outline-hidden focus:border-amber-600"
-            >
-              <option value="">All Processing States</option>
-              <option value="ready">Ready (Completed)</option>
-              <option value="transcribing">Transcribing</option>
-              <option value="generating_study_material">Generating Study Kit</option>
-              <option value="uploaded">Uploaded</option>
-              <option value="waiting_to_sync">Waiting to Sync</option>
-              <option value="failed">Failed (Retry Available)</option>
-            </select>
-
-            {/* Sort Order */}
-            <select
-              value={sortOrder}
-              onChange={(e) => setSortOrder(e.target.value)}
-              className="px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-xs text-zinc-700 focus:outline-hidden focus:border-amber-600"
-            >
-              <option value="newest">Newest First</option>
-              <option value="oldest">Oldest First</option>
-              <option value="title">Alphabetical (Title)</option>
-            </select>
-
-            {/* Layout Toggle */}
-            <div className="flex items-center border border-zinc-200 rounded-lg bg-zinc-50 p-0.5">
+        {/* ================= PW-STYLE CATEGORY OFFERINGS TABS ================= */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none border-b border-zinc-200/80 dark:border-zinc-800/80">
+          {[
+            { id: 'all', label: 'All Offerings', icon: BookOpen, count: lectures.length },
+            { id: 'audios', label: 'Classroom Audios', icon: Volume2, count: lectures.length },
+            { id: 'notes', label: 'Structured Notes', icon: FileText, count: readyLectures.length },
+            { id: 'practice', label: 'Practice Problems (DPP)', icon: HelpCircle, count: readyLectures.length },
+            { id: 'flashcards', label: '3D Flashcards', icon: Layers, count: readyLectures.length },
+            { id: 'mentor', label: 'AI Study Mentor', icon: Bot, badge: 'PW STYLE' },
+          ].map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeOfferingTab === tab.id;
+            return (
               <button
-                onClick={() => setLayout('grid')}
-                className={`p-1.5 rounded-md ${
-                  layout === 'grid' ? 'bg-white text-zinc-900 shadow-2xs' : 'text-zinc-500'
+                key={tab.id}
+                onClick={() => setActiveOfferingTab(tab.id)}
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition ${
+                  isActive
+                    ? 'bg-zinc-950 text-white dark:bg-white dark:text-zinc-950 shadow-sm'
+                    : 'bg-white dark:bg-[#121215] text-zinc-600 dark:text-zinc-400 border border-zinc-200/80 dark:border-zinc-800/80 hover:bg-zinc-100 dark:hover:bg-zinc-800'
                 }`}
-                title="Grid layout"
               >
-                <Grid className="w-3.5 h-3.5" />
+                <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-amber-400 dark:text-amber-600' : 'text-zinc-400'}`} />
+                <span>{tab.label}</span>
+                {tab.count !== undefined && (
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-md ${
+                    isActive ? 'bg-zinc-800 text-zinc-200 dark:bg-zinc-200 dark:text-zinc-800' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500'
+                  }`}>
+                    {tab.count}
+                  </span>
+                )}
+                {tab.badge && (
+                  <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded-full bg-purple-500/20 text-purple-600 dark:text-purple-300 border border-purple-500/30">
+                    {tab.badge}
+                  </span>
+                )}
               </button>
-              <button
-                onClick={() => setLayout('list')}
-                className={`p-1.5 rounded-md ${
-                  layout === 'list' ? 'bg-white text-zinc-900 shadow-2xs' : 'text-zinc-500'
-                }`}
-                title="List layout"
-              >
-                <List className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
+            );
+          })}
         </div>
 
-        {/* ================= LECTURE LISTINGS ================= */}
-        {loading ? (
-          <div className="py-20 flex flex-col items-center justify-center text-zinc-400">
-            <Loader2 className="w-8 h-8 animate-spin text-amber-600 mb-2" />
-            <p className="text-xs">Loading lecture library...</p>
-          </div>
-        ) : lectures.length === 0 ? (
-          /* Empty state */
-          <div className="bg-white border border-zinc-200 rounded-2xl p-12 text-center max-w-lg mx-auto space-y-4">
-            <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-700 flex items-center justify-center mx-auto">
-              <HardDrive className="w-6 h-6" />
-            </div>
-            <div>
-              <h3 className="text-base font-bold text-zinc-900">No Lectures Found</h3>
-              <p className="text-xs text-zinc-500 mt-1 leading-relaxed">
-                {searchQuery || selectedSubject || selectedStatus
-                  ? 'No lectures matched your current filters. Try resetting the search or subject filter.'
-                  : 'Start capturing lectures with your Raspberry Pi 4 device, or add a permitted test recording to experience the AI study kit workspace.'}
-              </p>
-            </div>
-            <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
-              <button
-                onClick={() => {
-                  setFormTitle('Introduction to Algorithms');
-                  setFormSubject('Computer Science');
-                  setShowAddModal(true);
-                }}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-zinc-900 hover:bg-zinc-800 rounded-lg transition"
-              >
-                <PlusCircle className="w-3.5 h-3.5 text-amber-400" />
-                Add Test Recording
-              </button>
-
-              <Link
-                href="/devices"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-semibold text-zinc-700 bg-zinc-100 hover:bg-zinc-200 rounded-lg transition"
-              >
-                Connect Raspberry Pi
-              </Link>
-            </div>
-          </div>
-        ) : layout === 'grid' ? (
-          /* Grid View */
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {lectures.map((lec) => (
-              <div
-                key={lec.id}
-                className="bg-white border border-zinc-200 rounded-2xl p-5 shadow-2xs hover:shadow-md transition flex flex-col justify-between group"
-              >
+        {/* ================= IF ACTIVE TAB IS AI STUDY MENTOR ================= */}
+        {activeOfferingTab === 'mentor' && (
+          <div className="bg-white dark:bg-[#121215] border border-zinc-200/80 dark:border-zinc-800/80 rounded-3xl p-6 sm:p-8 space-y-6 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-100 dark:border-zinc-800">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800 flex items-center justify-center text-purple-600 dark:text-purple-400">
+                  <Bot className="w-6 h-6" />
+                </div>
                 <div>
-                  <div className="flex items-center justify-between gap-2 mb-2">
-                    <span className="text-[11px] font-semibold text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md truncate max-w-[160px]">
-                      {lec.subject}
-                    </span>
-                    <StatusBadge status={lec.status} size="sm" />
-                  </div>
-
-                  <Link href={`/lectures/${lec.id}`} className="block">
-                    <h3 className="text-sm font-bold text-zinc-900 group-hover:text-amber-800 transition line-clamp-2">
-                      {lec.title}
-                    </h3>
-                  </Link>
-
-                  {lec.description && (
-                    <p className="text-xs text-zinc-500 mt-1 line-clamp-2">{lec.description}</p>
-                  )}
-
-                  <div className="mt-4 pt-3 border-t border-zinc-100 text-[11px] text-zinc-400 flex flex-wrap items-center gap-x-4 gap-y-1">
-                    <span className="flex items-center gap-1">
-                      <Calendar className="w-3 h-3" /> {formatDate(lec.recording_date)}
-                    </span>
-                    {lec.duration_seconds > 0 && (
-                      <span className="flex items-center gap-1">
-                        <Clock className="w-3 h-3" /> {formatDuration(lec.duration_seconds)}
-                      </span>
-                    )}
-                    {lec.file_size_bytes > 0 && (
-                      <span className="flex items-center gap-1">
-                        <HardDrive className="w-3 h-3" /> {formatFileSize(lec.file_size_bytes)}
-                      </span>
-                    )}
-                  </div>
+                  <h2 className="text-base font-extrabold text-zinc-950 dark:text-white">
+                    LecturePod AI Study Mentor
+                  </h2>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    PW-Style Academic Doubt Solver • Grounded in your classroom lectures
+                  </p>
                 </div>
+              </div>
 
-                <div className="mt-4 pt-3 border-t border-zinc-100 flex items-center justify-between">
-                  <Link
-                    href={`/lectures/${lec.id}`}
-                    className="inline-flex items-center gap-1 text-xs font-semibold text-zinc-900 hover:text-amber-700"
+              {/* Lecture Picker */}
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-zinc-500">Lecture:</span>
+                <select
+                  value={mentorLectureId}
+                  onChange={(e) => setMentorLectureId(e.target.value)}
+                  className="px-3 py-1.5 rounded-xl text-xs font-bold bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100"
+                >
+                  {lectures.map((l) => (
+                    <option key={l.id} value={l.id}>
+                      {l.title} ({l.subject})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Quick Prompt Suggestions */}
+            <div className="space-y-2">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">
+                Recommended Doubt Prompts:
+              </span>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  'Explain the core concept in simple Hinglish',
+                  'What are the key formulas and equations to memorize?',
+                  'Give me 3 high-yield exam practice problems with solutions',
+                  'Summarize the professor’s main takeaways for the exam',
+                ].map((promptText) => (
+                  <button
+                    key={promptText}
+                    onClick={() => handleSendMentorQuestion(promptText)}
+                    disabled={mentorLoading}
+                    className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/40 dark:hover:bg-purple-900/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 transition disabled:opacity-50"
                   >
-                    Open Workspace
-                  </Link>
+                    ✨ {promptText}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-                  <div className="flex items-center gap-1">
-                    {lec.status === 'failed' && (
-                      <button
-                        onClick={(e) => handleRetryProcessing(lec.id, e)}
-                        className="p-1.5 text-amber-700 hover:bg-amber-50 rounded-md transition"
-                        title="Retry AI processing"
-                      >
-                        <RotateCcw className="w-3.5 h-3.5" />
-                      </button>
-                    )}
-
-                    <button
-                      onClick={() => {
-                        setEditLecture(lec);
-                        setFormTitle(lec.title);
-                        setFormSubject(lec.subject);
-                        setFormDescription(lec.description || '');
-                      }}
-                      className="p-1.5 text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 rounded-md transition"
-                      title="Edit details"
-                    >
-                      <Edit3 className="w-3.5 h-3.5" />
-                    </button>
-
-                    <button
-                      onClick={() => setDeleteConfirmId(lec.id)}
-                      className="p-1.5 text-zinc-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition"
-                      title="Delete lecture"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+            {/* Chat Messages */}
+            <div className="space-y-4 max-h-[450px] overflow-y-auto p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900/40 border border-zinc-100 dark:border-zinc-800/80">
+              {mentorMessages.map((msg, idx) => (
+                <div
+                  key={idx}
+                  className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}
+                >
+                  <div className="flex items-center gap-1.5 mb-1 text-[10px] text-zinc-400">
+                    <span>{msg.role === 'user' ? 'You' : 'AI Study Mentor'}</span>
+                    <span>•</span>
+                    <span>{msg.time}</span>
+                  </div>
+                  <div
+                    className={`max-w-2xl p-4 rounded-2xl text-xs sm:text-sm leading-relaxed whitespace-pre-wrap ${
+                      msg.role === 'user'
+                        ? 'bg-zinc-950 text-white dark:bg-zinc-100 dark:text-zinc-950 rounded-br-none'
+                        : 'bg-white dark:bg-[#121215] border border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-200 rounded-bl-none shadow-xs'
+                    }`}
+                  >
+                    {msg.text}
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          /* List View */
-          <div className="bg-white border border-zinc-200 rounded-2xl divide-y divide-zinc-100 overflow-hidden shadow-2xs">
-            {lectures.map((lec) => (
-              <div
-                key={lec.id}
-                className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-zinc-50/80 transition"
+              ))}
+              {mentorLoading && (
+                <div className="flex items-center gap-2 p-3 text-xs text-purple-600 dark:text-purple-400 font-semibold animate-pulse">
+                  <Bot className="w-4 h-4 animate-spin" />
+                  <span>AI Mentor is thinking and analyzing lecture notes...</span>
+                </div>
+              )}
+            </div>
+
+            {/* Input Bar */}
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSendMentorQuestion();
+              }}
+              className="flex items-center gap-2 pt-2"
+            >
+              <input
+                type="text"
+                value={mentorQuestion}
+                onChange={(e) => setMentorQuestion(e.target.value)}
+                placeholder="Ask any doubt about this lecture (e.g. 'Explain step 2 of Raft consensus')..."
+                className="flex-1 px-4 py-3 rounded-2xl text-xs sm:text-sm bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              />
+              <button
+                type="submit"
+                disabled={!mentorQuestion.trim() || mentorLoading}
+                className="px-5 py-3 rounded-2xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs sm:text-sm transition shadow-sm disabled:opacity-50 flex items-center gap-1.5"
               >
-                <div className="space-y-1 flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-semibold text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md">
-                      {lec.subject}
-                    </span>
-                    <span className="text-xs text-zinc-400">•</span>
-                    <span className="text-xs text-zinc-500">{formatDate(lec.recording_date)}</span>
-                    {lec.duration_seconds > 0 && (
-                      <>
-                        <span className="text-xs text-zinc-400">•</span>
-                        <span className="text-xs text-zinc-500">{formatDuration(lec.duration_seconds)}</span>
-                      </>
-                    )}
-                  </div>
-                  <Link href={`/lectures/${lec.id}`}>
-                    <h3 className="text-sm font-bold text-zinc-900 hover:text-amber-800 transition truncate">
-                      {lec.title}
-                    </h3>
-                  </Link>
-                </div>
-
-                <div className="flex items-center gap-4 shrink-0">
-                  <StatusBadge status={lec.status} />
-
-                  <div className="flex items-center gap-1">
-                    {lec.status === 'failed' && (
-                      <button
-                        onClick={(e) => handleRetryProcessing(lec.id, e)}
-                        className="p-1.5 text-amber-700 hover:bg-amber-50 rounded-md transition"
-                        title="Retry processing"
-                      >
-                        <RotateCcw className="w-3.5 h-3.5" />
-                      </button>
-                    )}
-                    <button
-                      onClick={() => {
-                        setEditLecture(lec);
-                        setFormTitle(lec.title);
-                        setFormSubject(lec.subject);
-                        setFormDescription(lec.description || '');
-                      }}
-                      className="p-1.5 text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 rounded-md"
-                      title="Edit"
-                    >
-                      <Edit3 className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      onClick={() => setDeleteConfirmId(lec.id)}
-                      className="p-1.5 text-zinc-400 hover:text-rose-600 hover:bg-rose-50 rounded-md"
-                      title="Delete"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
+                <span>Ask</span>
+                <Send className="w-3.5 h-3.5" />
+              </button>
+            </form>
           </div>
         )}
 
-        {/* ================= ADD RECORDING MODAL ================= */}
-        {showAddModal && (
-          <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-            <div className="bg-white border border-zinc-200 rounded-2xl max-w-lg w-full p-6 shadow-xl space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
-                <h3 className="text-base font-bold text-zinc-900">Add Classroom Recording</h3>
+        {/* ================= SEARCH & FILTERS TOOLBAR ================= */}
+        {activeOfferingTab !== 'mentor' && (
+          <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+            {/* Search Input */}
+            <div className="relative flex-1">
+              <Search className="w-4 h-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                placeholder="Search lectures by title, subject, tags, or concepts..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 text-xs bg-white dark:bg-[#121215] border border-zinc-200/80 dark:border-zinc-800 rounded-xl text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500/40 transition"
+              />
+            </div>
+
+            {/* Filter Dropdowns */}
+            <div className="flex flex-wrap items-center gap-2">
+              <select
+                value={selectedSubject}
+                onChange={(e) => setSelectedSubject(e.target.value)}
+                className="px-3 py-2 text-xs bg-white dark:bg-[#121215] border border-zinc-200/80 dark:border-zinc-800 rounded-xl text-zinc-700 dark:text-zinc-300 focus:outline-none"
+              >
+                <option value="">All Subjects</option>
+                {subjects.map((sub) => (
+                  <option key={sub} value={sub}>{sub}</option>
+                ))}
+              </select>
+
+              <select
+                value={selectedStatus}
+                onChange={(e) => setSelectedStatus(e.target.value)}
+                className="px-3 py-2 text-xs bg-white dark:bg-[#121215] border border-zinc-200/80 dark:border-zinc-800 rounded-xl text-zinc-700 dark:text-zinc-300 focus:outline-none"
+              >
+                <option value="">All Statuses</option>
+                <option value="ready">Ready</option>
+                <option value="transcribing">Transcribing</option>
+                <option value="failed">Failed</option>
+              </select>
+
+              <select
+                value={sortOrder}
+                onChange={(e) => setSortOrder(e.target.value)}
+                className="px-3 py-2 text-xs bg-white dark:bg-[#121215] border border-zinc-200/80 dark:border-zinc-800 rounded-xl text-zinc-700 dark:text-zinc-300 focus:outline-none"
+              >
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
+                <option value="title">Alphabetical</option>
+              </select>
+
+              <div className="flex items-center bg-zinc-100 dark:bg-zinc-900 p-0.5 rounded-xl border border-zinc-200/60 dark:border-zinc-800">
                 <button
-                  onClick={() => setShowAddModal(false)}
-                  className="text-zinc-400 hover:text-zinc-700"
+                  onClick={() => setLayout('grid')}
+                  className={`p-1.5 rounded-lg transition ${
+                    layout === 'grid'
+                      ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-xs'
+                      : 'text-zinc-400 hover:text-zinc-700'
+                  }`}
+                  title="Grid view"
                 >
-                  <X className="w-5 h-5" />
+                  <Grid className="w-3.5 h-3.5" />
                 </button>
+                <button
+                  onClick={() => setLayout('list')}
+                  className={`p-1.5 rounded-lg transition ${
+                    layout === 'list'
+                      ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-xs'
+                      : 'text-zinc-400 hover:text-zinc-700'
+                  }`}
+                  title="List view"
+                >
+                  <List className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ================= LECTURES LIST / GRID ================= */}
+        {activeOfferingTab !== 'mentor' && (
+          loading ? (
+            <div className="py-24 flex flex-col items-center justify-center text-zinc-400">
+              <Loader2 className="w-8 h-8 animate-spin text-amber-600 mb-2" />
+              <p className="text-xs">Loading classroom study library...</p>
+            </div>
+          ) : lectures.length === 0 ? (
+            <div className="bg-white dark:bg-[#121215] border border-zinc-200/80 dark:border-zinc-800/80 rounded-3xl p-12 text-center max-w-lg mx-auto space-y-4 shadow-xs">
+              <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 flex items-center justify-center mx-auto">
+                <Search className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-zinc-950 dark:text-white">No Lectures Found</h3>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 max-w-sm mx-auto leading-relaxed">
+                  Start capturing lectures with your LecturePod Device, or simulate an automatic upload right now.
+                </p>
+              </div>
+              <div className="pt-2">
+                <button
+                  onClick={handleSimulateSync}
+                  disabled={simulatingSync}
+                  className="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-xs font-bold text-zinc-950 bg-amber-400 hover:bg-amber-300 rounded-xl transition"
+                >
+                  <Zap className="w-3.5 h-3.5 text-zinc-950" />
+                  {simulatingSync ? 'Syncing...' : 'Simulate Audio Sync'}
+                </button>
+              </div>
+            </div>
+          ) : layout === 'grid' ? (
+            /* ================= GRID VIEW WITH PW-STYLE WORKFLOW ================= */
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {lectures.map((lec) => (
+                <div
+                  key={lec.id}
+                  className="bg-white dark:bg-[#121215] border border-zinc-200/80 dark:border-zinc-800/80 rounded-3xl p-6 shadow-xs hover:shadow-lg transition flex flex-col justify-between group"
+                >
+                  <div>
+                    <div className="flex items-center justify-between gap-2 mb-3">
+                      <span className="text-[11px] font-bold text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 px-2.5 py-0.5 rounded-lg truncate max-w-[160px]">
+                        {lec.subject}
+                      </span>
+                      <StatusBadge status={lec.status} size="sm" />
+                    </div>
+
+                    <Link href={`/lectures/${lec.id}`} className="block">
+                      <h3 className="text-sm font-bold text-zinc-950 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400 transition line-clamp-2">
+                        {lec.title}
+                      </h3>
+                    </Link>
+
+                    {lec.description && (
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1.5 line-clamp-2 leading-relaxed">
+                        {lec.description}
+                      </p>
+                    )}
+
+                    <div className="mt-4 pt-3 border-t border-zinc-100 dark:border-zinc-800/80 text-[11px] text-zinc-400 dark:text-zinc-500 flex flex-wrap items-center gap-x-4 gap-y-1 font-medium">
+                      <span className="flex items-center gap-1">
+                        <Calendar className="w-3 h-3" /> {formatDate(lec.recording_date)}
+                      </span>
+                      {lec.duration_seconds > 0 && (
+                        <span className="flex items-center gap-1">
+                          <Clock className="w-3 h-3" /> {formatDuration(lec.duration_seconds)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* ================= PW-STYLE OFFERINGS ARROW CHAIN ================= */}
+                  <div className="mt-5 pt-4 border-t border-zinc-100 dark:border-zinc-800/80 space-y-3">
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+                      Study Offerings:
+                    </div>
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <Link
+                        href={`/lectures/${lec.id}?tab=audio`}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-300 text-[11px] font-bold transition border border-amber-500/20"
+                        title="Listen to classroom audio"
+                      >
+                        <Volume2 className="w-3 h-3" />
+                        <span>Audios</span>
+                      </Link>
+
+                      <ChevronRight className="w-3 h-3 text-zinc-400 shrink-0" />
+
+                      <Link
+                        href={`/lectures/${lec.id}?tab=notes`}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-700 dark:text-blue-300 text-[11px] font-bold transition border border-blue-500/20"
+                        title="Read structured notes"
+                      >
+                        <FileText className="w-3 h-3" />
+                        <span>Notes</span>
+                      </Link>
+
+                      <ChevronRight className="w-3 h-3 text-zinc-400 shrink-0" />
+
+                      <Link
+                        href={`/lectures/${lec.id}?tab=quiz`}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-purple-500/10 hover:bg-purple-500/20 text-purple-700 dark:text-purple-300 text-[11px] font-bold transition border border-purple-500/20"
+                        title="Practice problems & DPP"
+                      >
+                        <HelpCircle className="w-3 h-3" />
+                        <span>Practice</span>
+                      </Link>
+
+                      <ChevronRight className="w-3 h-3 text-zinc-400 shrink-0" />
+
+                      <Link
+                        href={`/lectures/${lec.id}?tab=flashcards`}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-[11px] font-bold transition border border-emerald-500/20"
+                        title="3D Flip flashcards"
+                      >
+                        <Layers className="w-3 h-3" />
+                        <span>Cards</span>
+                      </Link>
+
+                      <ChevronRight className="w-3 h-3 text-zinc-400 shrink-0" />
+
+                      <button
+                        onClick={() => {
+                          setMentorLectureId(lec.id);
+                          setActiveOfferingTab('mentor');
+                        }}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-purple-600 hover:bg-purple-500 text-white text-[11px] font-bold transition shadow-xs"
+                        title="Ask AI Mentor doubt solver"
+                      >
+                        <Bot className="w-3 h-3" />
+                        <span>Mentor</span>
+                      </button>
+                    </div>
+
+                    {/* Bottom Edit & Retry */}
+                    <div className="flex items-center justify-between pt-2">
+                      <Link
+                        href={`/lectures/${lec.id}`}
+                        className="inline-flex items-center gap-1 text-xs font-bold text-zinc-700 dark:text-zinc-300 hover:text-amber-500"
+                      >
+                        <span>Open Workspace</span>
+                        <ArrowRight className="w-3 h-3" />
+                      </Link>
+
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => {
+                            setEditLecture(lec);
+                            setFormTitle(lec.title);
+                            setFormSubject(lec.subject);
+                            setFormDescription(lec.description || '');
+                          }}
+                          className="p-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+                          title="Edit"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => setDeleteConfirmId(lec.id)}
+                          className="p-1 text-zinc-400 hover:text-rose-500"
+                          title="Delete"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            /* ================= LIST VIEW WITH PW-STYLE WORKFLOW ================= */
+            <div className="bg-white dark:bg-[#121215] border border-zinc-200/80 dark:border-zinc-800/80 rounded-3xl divide-y divide-zinc-100 dark:divide-zinc-800 overflow-hidden shadow-xs">
+              {lectures.map((lec) => (
+                <div key={lec.id} className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30 transition">
+                  <div className="space-y-1.5 flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] font-bold text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 px-2.5 py-0.5 rounded-lg">
+                        {lec.subject}
+                      </span>
+                      <StatusBadge status={lec.status} size="sm" />
+                      <span className="text-xs text-zinc-400">•</span>
+                      <span className="text-xs text-zinc-500">{formatDate(lec.recording_date)}</span>
+                      {lec.duration_seconds > 0 && (
+                        <>
+                          <span className="text-xs text-zinc-400">•</span>
+                          <span className="text-xs text-zinc-500">{formatDuration(lec.duration_seconds)}</span>
+                        </>
+                      )}
+                    </div>
+                    <Link href={`/lectures/${lec.id}`} className="block">
+                      <h3 className="text-sm font-bold text-zinc-950 dark:text-white hover:text-amber-600 dark:hover:text-amber-400 transition truncate">
+                        {lec.title}
+                      </h3>
+                    </Link>
+                  </div>
+
+                  {/* Flow Pills */}
+                  <div className="flex flex-wrap items-center gap-1.5 shrink-0">
+                    <Link
+                      href={`/lectures/${lec.id}?tab=audio`}
+                      className="px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-300 text-xs font-bold"
+                    >
+                      Audios
+                    </Link>
+                    <ChevronRight className="w-3 h-3 text-zinc-400" />
+                    <Link
+                      href={`/lectures/${lec.id}?tab=notes`}
+                      className="px-2.5 py-1 rounded-lg bg-blue-500/10 text-blue-700 dark:text-blue-300 text-xs font-bold"
+                    >
+                      Notes
+                    </Link>
+                    <ChevronRight className="w-3 h-3 text-zinc-400" />
+                    <Link
+                      href={`/lectures/${lec.id}?tab=quiz`}
+                      className="px-2.5 py-1 rounded-lg bg-purple-500/10 text-purple-700 dark:text-purple-300 text-xs font-bold"
+                    >
+                      Practice
+                    </Link>
+                    <ChevronRight className="w-3 h-3 text-zinc-400" />
+                    <Link
+                      href={`/lectures/${lec.id}?tab=flashcards`}
+                      className="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-xs font-bold"
+                    >
+                      Cards
+                    </Link>
+                    <ChevronRight className="w-3 h-3 text-zinc-400" />
+                    <button
+                      onClick={() => {
+                        setMentorLectureId(lec.id);
+                        setActiveOfferingTab('mentor');
+                      }}
+                      className="px-2.5 py-1 rounded-lg bg-purple-600 text-white text-xs font-bold"
+                    >
+                      AI Mentor
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )
+        )}
+
+        {/* Modal: Add Lecture */}
+        {showAddModal && (
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-[#121215] border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 sm:p-8 max-w-lg w-full space-y-5 shadow-2xl animate-in zoom-in-95">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-bold text-zinc-950 dark:text-white">Upload Classroom Recording</h3>
+                <button onClick={() => setShowAddModal(false)} className="text-zinc-400 hover:text-zinc-600">✕</button>
               </div>
 
               {formError && (
-                <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-lg flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 shrink-0" />
-                  <span>{formError}</span>
+                <div className="p-3 rounded-xl bg-rose-50 text-rose-700 text-xs border border-rose-200">
+                  {formError}
                 </div>
               )}
 
-              <form onSubmit={handleCreateLecture} className="space-y-4">
+              <form onSubmit={handleCreateSubmit} className="space-y-4 text-xs">
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-700 mb-1">
-                    Lecture Title *
-                  </label>
+                  <label className="font-bold text-zinc-700 dark:text-zinc-300 block mb-1">Lecture Title *</label>
                   <input
                     type="text"
                     required
                     value={formTitle}
                     onChange={(e) => setFormTitle(e.target.value)}
-                    placeholder="e.g. Distributed Consensus & Paxos"
-                    className="w-full px-3.5 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-xs text-zinc-900 focus:outline-hidden focus:border-amber-600"
+                    placeholder="e.g. Distributed Consensus Algorithms"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-zinc-900 dark:text-white"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-700 mb-1">
-                    Subject / Course *
-                  </label>
+                  <label className="font-bold text-zinc-700 dark:text-zinc-300 block mb-1">Subject *</label>
                   <input
                     type="text"
                     required
                     value={formSubject}
                     onChange={(e) => setFormSubject(e.target.value)}
-                    placeholder="e.g. Distributed Systems"
-                    className="w-full px-3.5 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-xs text-zinc-900 focus:outline-hidden focus:border-amber-600"
+                    placeholder="e.g. Computer Science"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-zinc-900 dark:text-white"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-700 mb-1">
-                    Description / Topics Covered (Optional)
-                  </label>
+                  <label className="font-bold text-zinc-700 dark:text-zinc-300 block mb-1">Description</label>
                   <textarea
                     rows={2}
                     value={formDescription}
                     onChange={(e) => setFormDescription(e.target.value)}
-                    placeholder="Key topics, exam warnings, or chapter numbers..."
-                    className="w-full px-3.5 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-xs text-zinc-900 focus:outline-hidden focus:border-amber-600"
+                    placeholder="Key topics covered..."
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-zinc-900 dark:text-white"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-700 mb-1">
-                    Audio File (Optional WAV / MP3 / M4A)
-                  </label>
+                  <label className="font-bold text-zinc-700 dark:text-zinc-300 block mb-1">Audio Recording (Optional)</label>
                   <input
                     type="file"
                     accept="audio/*"
-                    onChange={(e) => setFormAudioFile(e.target.files?.[0] || null)}
-                    className="w-full text-xs text-zinc-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-zinc-100 file:text-zinc-700 hover:file:bg-zinc-200"
+                    onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                    className="w-full text-zinc-500"
                   />
-                  <p className="text-[11px] text-zinc-400 mt-1">
-                    If no audio file is uploaded, a sample test audio placeholder will be generated automatically.
-                  </p>
                 </div>
 
-                <div className="pt-3 flex items-center justify-end gap-2 border-t border-zinc-100">
+                <div className="flex items-center justify-end gap-2 pt-2">
                   <button
                     type="button"
                     onClick={() => setShowAddModal(false)}
-                    className="px-4 py-2 text-xs font-semibold text-zinc-600 hover:text-zinc-900"
+                    className="px-4 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 font-bold"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-zinc-900 hover:bg-zinc-800 rounded-lg transition disabled:opacity-50"
+                    className="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold disabled:opacity-50"
                   >
-                    {submitting ? 'Creating & Starting AI...' : 'Create & Process'}
+                    {submitting ? 'Uploading...' : 'Save Lecture'}
                   </button>
                 </div>
               </form>
@@ -607,73 +913,62 @@ function LecturesPageContent() {
           </div>
         )}
 
-        {/* ================= EDIT MODAL ================= */}
+        {/* Modal: Edit Lecture */}
         {editLecture && (
-          <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-            <div className="bg-white border border-zinc-200 rounded-2xl max-w-lg w-full p-6 shadow-xl space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
-                <h3 className="text-base font-bold text-zinc-900">Edit Lecture Details</h3>
-                <button
-                  onClick={() => setEditLecture(null)}
-                  className="text-zinc-400 hover:text-zinc-700"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-[#121215] border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 sm:p-8 max-w-lg w-full space-y-5 shadow-2xl animate-in zoom-in-95">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-bold text-zinc-950 dark:text-white">Edit Lecture Metadata</h3>
+                <button onClick={() => setEditLecture(null)} className="text-zinc-400 hover:text-zinc-600">✕</button>
               </div>
 
-              <form onSubmit={handleUpdateLecture} className="space-y-4">
+              <form onSubmit={handleEditSubmit} className="space-y-4 text-xs">
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-700 mb-1">
-                    Lecture Title
-                  </label>
+                  <label className="font-bold text-zinc-700 dark:text-zinc-300 block mb-1">Lecture Title *</label>
                   <input
                     type="text"
                     required
                     value={formTitle}
                     onChange={(e) => setFormTitle(e.target.value)}
-                    className="w-full px-3.5 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-xs text-zinc-900 focus:outline-hidden focus:border-amber-600"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-zinc-900 dark:text-white"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-700 mb-1">
-                    Subject / Course
-                  </label>
+                  <label className="font-bold text-zinc-700 dark:text-zinc-300 block mb-1">Subject *</label>
                   <input
                     type="text"
                     required
                     value={formSubject}
                     onChange={(e) => setFormSubject(e.target.value)}
-                    className="w-full px-3.5 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-xs text-zinc-900 focus:outline-hidden focus:border-amber-600"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-zinc-900 dark:text-white"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-700 mb-1">
-                    Description
-                  </label>
+                  <label className="font-bold text-zinc-700 dark:text-zinc-300 block mb-1">Description</label>
                   <textarea
                     rows={3}
                     value={formDescription}
                     onChange={(e) => setFormDescription(e.target.value)}
-                    className="w-full px-3.5 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-xs text-zinc-900 focus:outline-hidden focus:border-amber-600"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-zinc-900 dark:text-white"
                   />
                 </div>
 
-                <div className="pt-3 flex items-center justify-end gap-2 border-t border-zinc-100">
+                <div className="flex items-center justify-end gap-2 pt-2">
                   <button
                     type="button"
                     onClick={() => setEditLecture(null)}
-                    className="px-4 py-2 text-xs font-semibold text-zinc-600 hover:text-zinc-900"
+                    className="px-4 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 font-bold"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="px-4 py-2 text-xs font-semibold text-white bg-zinc-900 hover:bg-zinc-800 rounded-lg transition"
+                    className="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold disabled:opacity-50"
                   >
-                    {submitting ? 'Saving...' : 'Save Changes'}
+                    {submitting ? 'Saving...' : 'Update Lecture'}
                   </button>
                 </div>
               </form>
@@ -681,51 +976,47 @@ function LecturesPageContent() {
           </div>
         )}
 
-        {/* ================= DELETE CONFIRMATION MODAL ================= */}
+        {/* Modal: Confirm Delete */}
         {deleteConfirmId && (
-          <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-            <div className="bg-white border border-zinc-200 rounded-2xl max-w-sm w-full p-6 shadow-xl space-y-4 text-center">
-              <div className="w-10 h-10 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto">
-                <Trash2 className="w-5 h-5" />
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-[#121215] border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 sm:p-8 max-w-sm w-full space-y-4 shadow-2xl animate-in zoom-in-95 text-center">
+              <div className="w-12 h-12 rounded-2xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 flex items-center justify-center mx-auto">
+                <Trash2 className="w-6 h-6" />
               </div>
-              <div>
-                <h4 className="text-base font-bold text-zinc-900">Delete Lecture?</h4>
-                <p className="text-xs text-zinc-500 mt-1">
-                  This will permanently remove the audio recording, transcript, study notes, flashcards, and quizzes. This action cannot be undone.
-                </p>
-              </div>
-              <div className="flex items-center justify-center gap-3 pt-2">
+              <h3 className="text-base font-bold text-zinc-950 dark:text-white">Delete this lecture?</h3>
+              <p className="text-xs text-zinc-500 leading-relaxed">
+                This will permanently delete the audio, transcript, notes, flashcards, and quizzes. This action cannot be undone.
+              </p>
+              <div className="flex items-center justify-center gap-2 pt-2">
                 <button
                   onClick={() => setDeleteConfirmId(null)}
-                  className="px-4 py-2 text-xs font-semibold text-zinc-600 hover:bg-zinc-100 rounded-lg transition"
+                  className="px-4 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 text-xs font-bold"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={() => handleDelete(deleteConfirmId)}
-                  className="px-4 py-2 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-700 rounded-lg transition"
+                  className="px-4 py-2 rounded-xl bg-rose-600 text-white text-xs font-bold hover:bg-rose-500"
                 >
-                  Confirm Delete
+                  Delete
                 </button>
               </div>
             </div>
           </div>
         )}
-      </main>
-    </div>
+      </div>
+    </StudentLayout>
   );
 }
 
 export default function LecturesPage() {
   return (
-    <React.Suspense
-      fallback={
-        <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center">
-          <Loader2 className="w-8 h-8 animate-spin text-amber-600" />
-        </div>
-      }
-    >
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#F8F9FA] dark:bg-[#09090B] flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-zinc-300 border-t-amber-500 rounded-full animate-spin" />
+      </div>
+    }>
       <LecturesPageContent />
-    </React.Suspense>
+    </Suspense>
   );
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
+import { ThemeProvider } from '@/components/ThemeProvider';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -13,9 +14,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Lecture Pod — AI-Powered Lecture Recording & Learning Ecosystem',
+  title: 'LecturePod — Intelligent Lecture Capture & Automated Learning Ecosystem',
   description:
-    'Capture classroom lectures offline with your Raspberry Pi 4 device. Automatically sync over Wi-Fi, and transform audio into structured AI notes, flashcards, quizzes, and revision sheets.',
+    'Studio-grade classroom lecture recording with the dedicated LecturePod Device. Autonomous offline capture, Wi-Fi auto-sync, and AI-synthesized notes, flashcards, and exam quizzes.',
 };
 
 export default function RootLayout({
@@ -24,9 +25,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-[#FAFAFA]`}>
-        {children}
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-[#F8F9FA] dark:bg-[#09090B] text-zinc-900 dark:text-zinc-100 transition-colors duration-200`}>
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Lecture Pod — Raspberry Pi 4 Model B Recording & Sync Agent
+Lecture Pod — LecturePod Device Recording & Sync Agent
 -----------------------------------------------------------
 Manages offline recording capture, local persistent queue, automatic
 Wi-Fi/hotspot sync, exponential backoff retries, and server heartbeats.
@@ -22,7 +22,7 @@ from datetime import datetime, timezone
 # Setup logging
 logging.basicConfig(
     level=logging.INFO,
-    format='[%(asctime)s] [%(levelname)s] [LecturePod-Pi] %(message)s',
+    format='[%(asctime)s] [%(levelname)s] [LecturePod-Device] %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S'
 )
 logger = logging.getLogger("lecturepod")
@@ -37,10 +37,10 @@ os.makedirs(RECORDINGS_DIR, exist_ok=True)
 
 DEFAULT_CONFIG = {
     "server_url": "http://192.168.1.100:3000",
-    "device_identifier": f"LP-PI4-{socket.gethostname().upper()[-4:] if len(socket.gethostname()) >= 4 else 'A82F'}",
-    "device_name": f"Lecture Pod Pi 4 ({socket.gethostname()})",
+    "device_identifier": f"LP-DEV-{socket.gethostname().upper()[-4:] if len(socket.gethostname()) >= 4 else 'A82F'}",
+    "device_name": f"LecturePod Device ({socket.gethostname()})",
     "api_token": None,
-    "firmware_version": "v1.2.0-rpi4",
+    "firmware_version": "v1.2.0-lp",
     "heartbeat_interval_sec": 60,
     "sync_retry_max": 5,
     "auto_delete_after_sync": False # Retention policy: keeps local backup unless permitted
@@ -369,7 +369,7 @@ def cmd_status():
     cfg = load_config()
     init_local_db()
     
-    print("\n================ LECTURE POD PI 4 STATUS ================")
+    print("\n================ LECTUREPOD DEVICE STATUS ================")
     print(f"Device Name:        {cfg['device_name']}")
     print(f"Device Identifier:  {cfg['device_identifier']}")
     print(f"Server URL:         {cfg['server_url']}")
@@ -414,7 +414,7 @@ def cmd_daemon():
         time.sleep(interval)
 
 def main():
-    parser = argparse.ArgumentParser(description="Lecture Pod Raspberry Pi 4 Agent")
+    parser = argparse.ArgumentParser(description="Lecture Pod Hardware Agent")
     subparsers = parser.add_subparsers(dest="command")
 
     # Pair

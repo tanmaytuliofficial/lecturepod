@@ -1,5 +1,5 @@
 [Unit]
-Description=Lecture Pod Raspberry Pi Recording & Sync Daemon
+Description=LecturePod Device Recording & Sync Daemon
 After=network-online.target
 Wants=network-online.target
 

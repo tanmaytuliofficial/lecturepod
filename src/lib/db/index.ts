@@ -52,7 +52,7 @@ function initSchema(db: Database.Database) {
       queued_recordings INTEGER DEFAULT 0,
       upload_progress_pct INTEGER DEFAULT 0,
       ip_address TEXT,
-      firmware_version TEXT DEFAULT 'v1.2.0-rpi4',
+      firmware_version TEXT DEFAULT 'v1.2.0-lp',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE CASCADE

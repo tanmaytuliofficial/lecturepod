@@ -69,17 +69,17 @@ if quiz and quiz.get('questions'):
     })
     print(f"[PASS] Quiz Submission: Score = {ans_res.get('score')}/{ans_res.get('total_questions')} ({ans_res.get('percentage')}%)")
 
-print("\n=== 4. TESTING RASPBERRY PI 4 PAIRING & SYNC PROTOCOL ===")
+print("\n=== 4. TESTING LECTUREPOD DEVICE PAIRING & SYNC PROTOCOL ===")
 token_res = request('http://localhost:3000/api/devices/generate-token', 'POST')
 pairing_code = token_res.get('pairing_code')
 print(f"[PASS] Web platform generated 6-char pairing code: {pairing_code}")
 
-# Run Raspberry Pi Python Agent to pair with this code
+# Run LecturePod Device Python Agent to pair with this code
 pair_cmd = [sys.executable, "rpi-agent/lecturepod_agent.py", "pair", "--code", pairing_code, "--server", "http://localhost:3000"]
 p_res = subprocess.run(pair_cmd, capture_output=True, text=True)
 print(f"[PASS] Agent Pairing output: {p_res.stdout.strip()}")
 
-# Test Raspberry Pi offline record and auto sync
+# Test LecturePod Device offline record and auto sync
 rec_cmd = [sys.executable, "rpi-agent/lecturepod_agent.py", "record", "--title", "Operating Systems Concurrency", "--subject", "Computer Science", "--duration", "5"]
 r_res = subprocess.run(rec_cmd, capture_output=True, text=True)
 print(f"[PASS] Agent Record & Sync output: {r_res.stdout.strip()[:140]}...")
@@ -89,7 +89,20 @@ stat_cmd = [sys.executable, "rpi-agent/lecturepod_agent.py", "status"]
 s_res = subprocess.run(stat_cmd, capture_output=True, text=True)
 print(s_res.stdout.strip())
 
-print("=== 5. TESTING GLOBAL SEARCH & DATA EXPORT ===")
+print("\n=== 5. TESTING ONE-CLICK DEMO HARDWARE SIMULATOR ENDPOINTS ===")
+demo_pair = request('http://localhost:3000/api/demo/pair-device', 'POST')
+print(f"[PASS] Demo Pair: success={demo_pair.get('success')}, device={demo_pair.get('device_identifier')}")
+
+demo_sync = request('http://localhost:3000/api/demo/simulate-sync', 'POST')
+print(f"[PASS] Demo Sync & Auto AI Kit: success={demo_sync.get('success')}, title={demo_sync.get('title')}")
+
+print("\n=== 6. TESTING PW-STYLE AI STUDY MENTOR (DOUBT SOLVER) ===")
+mentor_res = request('http://localhost:3000/api/mentor', 'POST', {
+    'question': 'Explain Self-Attention mechanism in simple Hinglish'
+})
+print(f"[PASS] AI Mentor Answered: Mentor='{mentor_res.get('mentor')}', Answer Length={len(mentor_res.get('answer', ''))} chars")
+
+print("\n=== 7. TESTING GLOBAL SEARCH & DATA EXPORT ===")
 search_res = request('http://localhost:3000/api/search?q=Eigenvalues')
 print(f"[PASS] Search 'Eigenvalues' found {search_res.get('totalMatches')} matches across library, notes, and transcripts")
 

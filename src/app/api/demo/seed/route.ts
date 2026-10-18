@@ -12,13 +12,14 @@ export async function POST() {
   const db = getDatabase();
 
   // Create or retrieve a demo device
-  let device = db.prepare("SELECT id FROM devices WHERE user_id = ? AND device_identifier = 'LP-PI4-DEMO'").get(user.id) as any;
+  const demoIdentifier = `LP-DEV-DEMO-${user.id.replace(/[^a-zA-Z0-9]/g, '').substring(0, 8)}`;
+  let device = db.prepare("SELECT id FROM devices WHERE device_identifier = ?").get(demoIdentifier) as any;
   if (!device) {
     const devId = `dev_demo_${Date.now()}`;
     db.prepare(`
       INSERT INTO devices (id, user_id, name, device_identifier, status, ip_address, firmware_version, last_heartbeat_at, last_sync_at)
-      VALUES (?, ?, 'Lecture Pod Pi 4 (Demo Lab)', 'LP-PI4-DEMO', 'online', '192.168.1.104', 'v1.2.0-rpi4', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-    `).run(devId, user.id);
+      VALUES (?, ?, 'LecturePod Device (Studio Unit)', ?, 'online', '192.168.1.104', 'v1.2.0-lp', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    `).run(devId, user.id, demoIdentifier);
     device = { id: devId };
   }
 

@@ -1,6 +1,6 @@
-# Lecture Pod — Student Learning Platform & Raspberry Pi 4 Ecosystem
+# Lecture Pod — Student Learning Platform & LecturePod Hardware Ecosystem
 
-**Lecture Pod** is an AI-powered lecture recording and revision ecosystem designed for university students. It pairs with an offline-first **Raspberry Pi 4 Model B** recording pod to automatically capture classroom lectures, store audio offline, sync over Wi-Fi, and transform audio into structured notes, revision sheets, interactive flashcards, and quizzes.
+**Lecture Pod** is an AI-powered lecture recording and revision ecosystem designed for university students. It pairs with an offline-first **LecturePod Device** to automatically capture classroom lectures, store audio offline, sync over Wi-Fi, and transform audio into structured notes, revision sheets, interactive flashcards, and quizzes.
 
 ---
 
@@ -8,7 +8,7 @@
 
 ```mermaid
 graph TD
-  A["Classroom Audio / Mic"] --> B["Raspberry Pi 4 Model B"]
+  A["Classroom Audio / Mic"] --> B["LecturePod Device (Edge Unit)"]
   B -->|"Offline Storage"| C["Local SQLite Queue (queue.db)"]
   C -->|"Wi-Fi / Hotspot Detected"| D["Auto-Sync Agent (Python)"]
   D -->|"1. Idempotent Registration"| E["Lecture Pod Web Platform"]
@@ -29,10 +29,10 @@ graph TD
 | **Marketing Landing Page** | Verified | Clean, minimal UI with soft off-white background, champagne gold accents, feature showcase, interactive UI preview, privacy section, and FAQ. |
 | **Authentication & Profiles** | Verified | Student registration, login, logout, session persistence, user data isolation, and profile onboarding (college, branch, semester, preferred language). |
 | **Multilingual Support** | Verified | English, Hindi, and Hinglish lecture recognition and synthesis preferences. |
-| **Student Dashboard** | Verified | Real database metrics (saved lectures, processing queue, completed kits, Pi status), recent lectures, study reminders, and zero-fake empty states. |
+| **Student Dashboard** | Verified | Real database metrics (saved lectures, processing queue, completed kits, LecturePod Device status), recent lectures, study reminders, and zero-fake empty states. |
 | **Lecture Library** | Verified | Grid and list views, search by title/transcript, filter by subject/status, sort, audio player, edit metadata, delete confirmation, retry failed jobs. |
 | **Individual Workspace (7 Tabs)** | Verified | **Overview** (summary, key concepts, timeline), **Audio Player** (seek, rate cycling, skip 10s), **Transcript** (timestamped segments, jump to audio), **AI Notes** (structured markdown with live autosave & .md export), **Flashcards** (3D flip, shuffle, mastery toggle), **Quiz** (transcript-derived multiple-choice, score calculation, explanations, review, retake), **Revision Sheet** (printable high-yield capsule). |
-| **Raspberry Pi 4 Model B Agent** | Verified | Python daemon (`rpi-agent/lecturepod_agent.py`) with offline SQLite queue, automatic sync on Wi-Fi reconnect, exponential backoff, and heartbeat diagnostics. |
+| **LecturePod Device Agent** | Verified | Python daemon (`rpi-agent/lecturepod_agent.py`) with offline SQLite queue, automatic sync on Wi-Fi reconnect, exponential backoff, and heartbeat diagnostics. |
 | **Device Pairing Protocol** | Verified | 6-character pairing codes (e.g., `LP-E285F1`), HMAC signed permanent device tokens, honest online/offline heartbeat detection. |
 | **Global Search** | Verified | Database-backed search across lecture titles, subjects, spoken transcript segments, notes, and flashcards with deep links. |
 | **Study Planner** | Verified | Lightweight revision task manager linked directly to captured lectures with target due dates. |
@@ -49,7 +49,7 @@ graph TD
 - **Database:**
   - **Local Development / Zero-Config:** Relational SQLite via `better-sqlite3` with WAL mode
   - **Cloud Production:** Supabase PostgreSQL with complete Row Level Security (RLS) migrations
-- **Hardware Integration:** Python 3 agent for Raspberry Pi 4 Model B
+- **Hardware Integration:** Python 3 agent for LecturePod Device
 - **AI Integrations:** OpenAI Whisper / Groq Whisper (STT) + OpenAI GPT-4o-mini / Gemini / Academic synthesis engine
 
 ---
@@ -58,7 +58,7 @@ graph TD
 
 - **Node.js:** v18.0.0 or later (v24.15.0 verified)
 - **npm:** v9.0.0 or later
-- **Python:** v3.9+ (v3.11.9 verified for Raspberry Pi agent)
+- **Python:** v3.9+ (v3.11.9 verified for device agent)
 - **Optional for Cloud Deployment:** Supabase project account & API keys
 
 ---
@@ -112,7 +112,7 @@ graph TD
    GEMINI_API_KEY=
 
    # Device Hardware Salt
-   DEVICE_API_SALT=lecturepod_rpi_device_salt_2025
+   DEVICE_API_SALT=lecturepod_hardware_device_salt_2025
    ```
 
 ---
@@ -143,12 +143,12 @@ If deploying to Supabase:
 
 ---
 
-## 8. Raspberry Pi 4 Device Agent Setup
+## 8. LecturePod Device Agent Setup
 
 ### Pairing the Device
 1. Log in to the web platform and navigate to **Device Management** (`/devices`).
 2. Click **Pair New Device** to generate a 6-character code (e.g., `LP-E285F1`).
-3. On the Raspberry Pi terminal (or via SSH/VNC):
+3. On the LecturePod Device terminal (or via SSH/serial):
    ```bash
    python3 rpi-agent/lecturepod_agent.py pair --code LP-E285F1 --server http://<server-ip>:3000
    ```
@@ -206,4 +206,4 @@ To install as a systemd service that starts on boot, see [`rpi-agent/README.md`]
 ## 11. Known Limitations & External Credentials
 
 - **Speech-to-Text:** Configured to use academic fallback when `OPENAI_API_KEY` or `GROQ_API_KEY` is not present in `.env.local`. When an API key is provided, it automatically calls OpenAI Whisper or Groq Whisper (`whisper-large-v3`).
-- **Hardware Simulation:** The Python agent generates valid 44.1kHz PCM WAV files in development. On physical Raspberry Pi hardware, it integrates directly with ALSA (`arecord`) or USB/I2S microphone arrays as documented in `rpi-agent/README.md`.
+- **Hardware Simulation:** The Python agent generates valid 44.1kHz PCM WAV files in development. On physical hardware, it integrates directly with ALSA (`arecord`) or USB/I2S microphone arrays as documented in `rpi-agent/README.md`.

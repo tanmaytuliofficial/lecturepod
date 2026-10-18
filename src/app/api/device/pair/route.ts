@@ -60,7 +60,7 @@ export async function POST(req: Request) {
         UPDATE devices 
         SET user_id = ?, name = ?, status = 'online', ip_address = ?, firmware_version = ?, last_heartbeat_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
         WHERE id = ?
-      `).run(userId, device_name || 'Lecture Pod Pi 4', ip_address || null, firmware_version || 'v1.2.0-rpi4', deviceId);
+      `).run(userId, device_name || 'LecturePod Device Unit 1', ip_address || null, firmware_version || 'v1.2.0-lp', deviceId);
     } else {
       deviceId = `dev_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
       db.prepare(`
@@ -69,10 +69,10 @@ export async function POST(req: Request) {
       `).run(
         deviceId,
         userId,
-        device_name || 'Lecture Pod Pi 4',
+        device_name || 'LecturePod Device Unit 1',
         device_identifier,
         ip_address || null,
-        firmware_version || 'v1.2.0-rpi4'
+        firmware_version || 'v1.2.0-lp'
       );
     }
 
@@ -85,11 +85,11 @@ export async function POST(req: Request) {
     return NextResponse.json({
       success: true,
       device_id: deviceId,
-      device_name: device_name || 'Lecture Pod Pi 4',
+      device_name: device_name || 'LecturePod Device Unit 1',
       device_identifier,
       student_name: student?.full_name || 'Student',
       api_token: apiToken,
-      message: 'Raspberry Pi 4 successfully paired with student account.'
+      message: 'LecturePod Device successfully paired with student account.'
     });
   } catch (error: any) {
     console.error('Pairing error:', error);

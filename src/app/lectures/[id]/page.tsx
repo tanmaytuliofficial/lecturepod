@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect, use } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { StudentNav } from '@/components/StudentNav';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { StudentLayout } from '@/components/StudentLayout';
 import { StatusBadge } from '@/components/StatusBadge';
 import { AudioPlayer } from '@/components/AudioPlayer';
 import { FlashcardDeck } from '@/components/FlashcardDeck';
@@ -29,7 +29,9 @@ import {
   HardDrive,
   Edit2,
   Save,
-  AlertCircle
+  AlertCircle,
+  Bot,
+  Send
 } from 'lucide-react';
 
 export default function LectureWorkspacePage({
@@ -38,16 +40,28 @@ export default function LectureWorkspacePage({
   params: Promise<{ id: string }>;
 }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { id } = use(params);
 
+  const initialTab = (searchParams?.get('tab') as any) || 'overview';
   const [activeTab, setActiveTab] = useState<
-    'overview' | 'audio' | 'transcript' | 'notes' | 'flashcards' | 'quiz' | 'revision'
-  >('overview');
+    'overview' | 'audio' | 'transcript' | 'notes' | 'flashcards' | 'quiz' | 'revision' | 'mentor'
+  >(['overview', 'audio', 'transcript', 'notes', 'flashcards', 'quiz', 'revision', 'mentor'].includes(initialTab) ? initialTab : 'overview');
 
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [seekTime, setSeekTime] = useState<number | null>(null);
+
+  // AI Mentor state
+  const [mentorQuestion, setMentorQuestion] = useState('');
+  const [mentorLoading, setMentorLoading] = useState(false);
+  const [mentorMessages, setMentorMessages] = useState<Array<{ role: 'user' | 'assistant'; text: string }>>([
+    {
+      role: 'assistant',
+      text: 'Namaste! Main hoon aapka PW-Style AI Mentor. Is lecture ke kisi bhi step, formula ya doubt ko poochhiye — main simple Hinglish/English mein explain karunga!'
+    }
+  ]);
 
   // Transcript search
   const [transcriptSearch, setTranscriptSearch] = useState('');
@@ -142,31 +156,50 @@ export default function LectureWorkspacePage({
     return `${m}:${s < 10 ? '0' : ''}${s}`;
   };
 
+  const handleAskMentor = async (qText?: string) => {
+    const text = qText || mentorQuestion;
+    if (!text.trim() || mentorLoading) return;
+    setMentorMessages(prev => [...prev, { role: 'user', text }]);
+    if (!qText) setMentorQuestion('');
+    setMentorLoading(true);
+    try {
+      const res = await fetch('/api/mentor', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lectureId: id, question: text })
+      });
+      const d = await res.json();
+      setMentorMessages(prev => [...prev, { role: 'assistant', text: d.answer || 'Doubt solved.' }]);
+    } catch {
+      setMentorMessages(prev => [...prev, { role: 'assistant', text: 'Network connection error. Please try again.' }]);
+    } finally {
+      setMentorLoading(false);
+    }
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#FAFAFA] flex flex-col">
-        <StudentNav user={currentUser} />
-        <div className="flex-1 flex flex-col items-center justify-center text-zinc-400">
+      <StudentLayout user={currentUser} workspace="study" breadcrumbs={[{ label: 'Lecture Workspace' }]}>
+        <div className="py-24 flex flex-col items-center justify-center text-zinc-400">
           <Loader2 className="w-8 h-8 animate-spin text-amber-600 mb-2" />
           <p className="text-xs">Loading lecture workspace...</p>
         </div>
-      </div>
+      </StudentLayout>
     );
   }
 
   if (!data?.lecture) {
     return (
-      <div className="min-h-screen bg-[#FAFAFA] flex flex-col">
-        <StudentNav user={currentUser} />
-        <div className="flex-1 flex flex-col items-center justify-center p-4 text-center">
+      <StudentLayout user={currentUser} workspace="study" breadcrumbs={[{ label: 'Lecture Not Found' }]}>
+        <div className="py-20 flex flex-col items-center justify-center p-4 text-center">
           <AlertCircle className="w-10 h-10 text-rose-500 mb-2" />
-          <h2 className="text-lg font-bold text-zinc-900">Lecture Not Found</h2>
+          <h2 className="text-lg font-bold text-zinc-950 dark:text-white">Lecture Not Found</h2>
           <p className="text-xs text-zinc-500 mt-1">This lecture does not exist or you do not have permission.</p>
-          <Link href="/lectures" className="mt-4 px-4 py-2 bg-zinc-900 text-white rounded-lg text-xs font-semibold">
+          <Link href="/lectures" className="mt-4 px-4 py-2 bg-zinc-950 text-white rounded-xl text-xs font-semibold">
             Back to Library
           </Link>
         </div>
-      </div>
+      </StudentLayout>
     );
   }
 
@@ -178,21 +211,26 @@ export default function LectureWorkspacePage({
   );
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] flex flex-col">
-      <StudentNav user={currentUser} />
-
-      {/* Top Banner & Header */}
-      <div className="bg-white border-b border-zinc-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+    <StudentLayout
+      user={currentUser}
+      workspace="study"
+      breadcrumbs={[
+        { label: 'Lecture Library', href: '/lectures' },
+        { label: lecture.title }
+      ]}
+    >
+      <div className="space-y-6">
+        {/* Top Banner & Header */}
+        <div className="bg-white dark:bg-[#121215] border border-zinc-200/80 dark:border-zinc-800/80 rounded-3xl p-6 sm:p-8 shadow-xs">
           <div className="flex items-center gap-2 mb-3">
             <Link
               href="/lectures"
-              className="inline-flex items-center gap-1 text-xs font-semibold text-zinc-500 hover:text-zinc-900 transition"
+              className="inline-flex items-center gap-1 text-xs font-semibold text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition"
             >
-              <ArrowLeft className="w-3.5 h-3.5" /> Lecture Library
+              <ArrowLeft className="w-3.5 h-3.5" /> Back to Library
             </Link>
-            <span className="text-zinc-300">/</span>
-            <span className="text-xs font-semibold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
+            <span className="text-zinc-300 dark:text-zinc-700">/</span>
+            <span className="text-xs font-bold text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 px-2.5 py-0.5 rounded-md border border-amber-200 dark:border-amber-800">
               {lecture.subject}
             </span>
           </div>
@@ -200,12 +238,12 @@ export default function LectureWorkspacePage({
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <div className="flex flex-wrap items-center gap-2.5 mb-1.5">
-                <h1 className="text-xl sm:text-2xl font-extrabold text-zinc-900 tracking-tight">
+                <h1 className="text-xl sm:text-2xl font-extrabold text-zinc-950 dark:text-white tracking-tight">
                   {lecture.title}
                 </h1>
                 <StatusBadge status={lecture.status} />
               </div>
-              <p className="text-xs text-zinc-500 flex flex-wrap items-center gap-3">
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 flex flex-wrap items-center gap-3">
                 <span className="inline-flex items-center gap-1">
                   <Calendar className="w-3.5 h-3.5 text-zinc-400" />
                   {new Date(lecture.recording_date).toLocaleDateString('en-US', {
@@ -243,7 +281,7 @@ export default function LectureWorkspacePage({
           </div>
 
           {/* 7 Workspace Tabs */}
-          <div className="mt-6 flex items-center gap-1 overflow-x-auto border-b border-zinc-200 -mb-5 pb-0 text-xs font-semibold">
+          <div className="mt-6 flex items-center gap-1.5 overflow-x-auto border-b border-zinc-200/80 dark:border-zinc-800 -mb-6 sm:-mb-8 pb-0 text-xs font-semibold scrollbar-none">
             {[
               { id: 'overview', label: 'Overview', icon: Bookmark },
               { id: 'audio', label: 'Audio Player', icon: Volume2 },
@@ -252,6 +290,7 @@ export default function LectureWorkspacePage({
               { id: 'flashcards', label: `Flashcards (${flashcards?.length || 0})`, icon: Layers },
               { id: 'quiz', label: 'Practice Quiz', icon: HelpCircle },
               { id: 'revision', label: 'Revision Sheet', icon: Sparkles },
+              { id: 'mentor', label: 'AI Study Mentor', icon: Bot },
             ].map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -259,23 +298,22 @@ export default function LectureWorkspacePage({
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
-                  className={`inline-flex items-center gap-1.5 px-4 py-3 border-b-2 font-medium transition whitespace-nowrap ${
+                  className={`inline-flex items-center gap-2 px-4 py-3 border-b-2 font-medium transition whitespace-nowrap text-xs ${
                     isActive
-                      ? 'border-amber-600 text-amber-800 font-bold bg-amber-50/50'
-                      : 'border-transparent text-zinc-600 hover:text-zinc-900 hover:border-zinc-300'
+                      ? 'border-zinc-950 dark:border-white text-zinc-950 dark:text-white font-bold bg-amber-500/10 rounded-t-xl'
+                      : 'border-transparent text-zinc-500 hover:text-zinc-950 dark:hover:text-white hover:border-zinc-300'
                   }`}
                 >
-                  <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-amber-600' : 'text-zinc-400'}`} />
+                  <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-amber-500' : 'text-zinc-400'}`} />
                   {tab.label}
                 </button>
               );
             })}
           </div>
         </div>
-      </div>
 
-      {/* Main Workspace Body */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Main Workspace Body */}
+        <div className="w-full">
         {/* ================= TAB 1: OVERVIEW ================= */}
         {activeTab === 'overview' && (
           <div className="space-y-6 max-w-4xl">
@@ -316,24 +354,24 @@ export default function LectureWorkspacePage({
             )}
 
             {/* Processing Timeline */}
-            <div className="bg-white border border-zinc-200 rounded-2xl p-6 shadow-2xs space-y-4">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-500">
+            <div className="bg-white border border-zinc-200/80 rounded-3xl p-7 shadow-xs space-y-4">
+              <h3 className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">
                 Processing Lifecycle & Pipeline Status
               </h3>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
-                <div className={`p-4 rounded-xl border ${lecture.audio_url ? 'bg-emerald-50/60 border-emerald-200 text-emerald-800' : 'bg-zinc-50 border-zinc-200 text-zinc-400'}`}>
+                <div className={`p-4 rounded-2xl border ${lecture.audio_url ? 'bg-emerald-50/60 border-emerald-200 text-emerald-900' : 'bg-zinc-50 border-zinc-200 text-zinc-400'}`}>
                   <p className="text-xs font-bold">1. Device Capture</p>
-                  <p className="text-[11px] mt-0.5">{lecture.audio_url ? 'Audio Synced' : 'Queued on Pi'}</p>
+                  <p className="text-[11px] mt-0.5">{lecture.audio_url ? 'Audio Synced' : 'Queued on LecturePod Device'}</p>
                 </div>
-                <div className={`p-4 rounded-xl border ${transcript ? 'bg-emerald-50/60 border-emerald-200 text-emerald-800' : 'bg-zinc-50 border-zinc-200 text-zinc-400'}`}>
+                <div className={`p-4 rounded-2xl border ${transcript ? 'bg-emerald-50/60 border-emerald-200 text-emerald-900' : 'bg-zinc-50 border-zinc-200 text-zinc-400'}`}>
                   <p className="text-xs font-bold">2. Speech-to-Text</p>
                   <p className="text-[11px] mt-0.5">{transcript ? 'Transcribed' : 'Pending'}</p>
                 </div>
-                <div className={`p-4 rounded-xl border ${studyMaterials ? 'bg-emerald-50/60 border-emerald-200 text-emerald-800' : 'bg-zinc-50 border-zinc-200 text-zinc-400'}`}>
+                <div className={`p-4 rounded-2xl border ${studyMaterials ? 'bg-emerald-50/60 border-emerald-200 text-emerald-900' : 'bg-zinc-50 border-zinc-200 text-zinc-400'}`}>
                   <p className="text-xs font-bold">3. Notes & Summary</p>
                   <p className="text-[11px] mt-0.5">{studyMaterials ? 'Synthesized' : 'Pending'}</p>
                 </div>
-                <div className={`p-4 rounded-xl border ${flashcards?.length > 0 ? 'bg-emerald-50/60 border-emerald-200 text-emerald-800' : 'bg-zinc-50 border-zinc-200 text-zinc-400'}`}>
+                <div className={`p-4 rounded-2xl border ${flashcards?.length > 0 ? 'bg-emerald-50/60 border-emerald-200 text-emerald-900' : 'bg-zinc-50 border-zinc-200 text-zinc-400'}`}>
                   <p className="text-xs font-bold">4. Study Kit</p>
                   <p className="text-[11px] mt-0.5">{flashcards?.length > 0 ? 'Flashcards & Quiz Ready' : 'Pending'}</p>
                 </div>
@@ -598,7 +636,89 @@ export default function LectureWorkspacePage({
             </div>
           </div>
         )}
-      </main>
-    </div>
+
+        {/* 8. AI STUDY MENTOR TAB */}
+        {activeTab === 'mentor' && (
+          <div className="bg-white dark:bg-[#121215] border border-zinc-200/80 dark:border-zinc-800/80 rounded-3xl p-6 sm:p-8 space-y-6 shadow-xs">
+            <div className="flex items-center justify-between pb-4 border-b border-zinc-100 dark:border-zinc-800">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800 flex items-center justify-center text-purple-600 dark:text-purple-400">
+                  <Bot className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-zinc-950 dark:text-white">
+                    AI Doubt Mentor for {lecture.title}
+                  </h2>
+                  <p className="text-xs text-zinc-500">
+                    Ask any question, conceptual derivation, or exam problem on this lecture.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Prompts */}
+            <div className="flex flex-wrap gap-2">
+              {[
+                'Explain the main concept in simple Hinglish',
+                'What are the key formulas to remember for the exam?',
+                'Give me 2 practice problems with solutions based on this lecture',
+                'What is the professor emphasizing most for tests?'
+              ].map((pText) => (
+                <button
+                  key={pText}
+                  onClick={() => handleAskMentor(pText)}
+                  disabled={mentorLoading}
+                  className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/40 dark:hover:bg-purple-900/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 transition"
+                >
+                  ✨ {pText}
+                </button>
+              ))}
+            </div>
+
+            {/* Chat Messages */}
+            <div className="space-y-4 max-h-[450px] overflow-y-auto p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900/40 border border-zinc-100 dark:border-zinc-800/80">
+              {mentorMessages.map((m, i) => (
+                <div key={i} className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'}`}>
+                  <span className="text-[10px] text-zinc-400 mb-1">{m.role === 'user' ? 'You' : 'AI Study Mentor'}</span>
+                  <div className={`p-4 rounded-2xl text-xs sm:text-sm leading-relaxed whitespace-pre-wrap max-w-2xl ${
+                    m.role === 'user'
+                      ? 'bg-zinc-950 text-white dark:bg-zinc-100 dark:text-zinc-950 rounded-br-none'
+                      : 'bg-white dark:bg-[#121215] border border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-200 rounded-bl-none shadow-xs'
+                  }`}>
+                    {m.text}
+                  </div>
+                </div>
+              ))}
+              {mentorLoading && (
+                <div className="flex items-center gap-2 p-3 text-xs text-purple-600 dark:text-purple-400 font-semibold animate-pulse">
+                  <Bot className="w-4 h-4 animate-spin" />
+                  <span>AI Mentor is analyzing lecture context...</span>
+                </div>
+              )}
+            </div>
+
+            {/* Input Bar */}
+            <form onSubmit={(e) => { e.preventDefault(); handleAskMentor(); }} className="flex items-center gap-2">
+              <input
+                type="text"
+                value={mentorQuestion}
+                onChange={(e) => setMentorQuestion(e.target.value)}
+                placeholder="Type your doubt about this lecture..."
+                className="flex-1 px-4 py-3 rounded-2xl text-xs sm:text-sm bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              />
+              <button
+                type="submit"
+                disabled={!mentorQuestion.trim() || mentorLoading}
+                className="px-5 py-3 rounded-2xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs sm:text-sm transition flex items-center gap-1.5 disabled:opacity-50"
+              >
+                <span>Ask</span>
+                <Send className="w-3.5 h-3.5" />
+              </button>
+            </form>
+          </div>
+        )}
+        </div>
+      </div>
+    </StudentLayout>
   );
 }
