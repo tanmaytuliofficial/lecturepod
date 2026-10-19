@@ -11,17 +11,12 @@ import {
   Mail, 
   KeyRound, 
   ChevronRight,
-  Sparkles,
   Radio,
   BookOpen,
   Trophy,
   ArrowRight,
   RotateCw,
-  BatteryCharging,
-  Cpu,
-  Layers,
-  HelpCircle,
-  Headphones
+  BatteryCharging
 } from 'lucide-react';
 import { LecturePodDevice } from '@/components/LecturePodDevice';
 
@@ -33,9 +28,24 @@ export default function RegisterPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Transition and Landscape states
-  const [isRotating, setIsRotating] = useState(false);
-  const [isLandscape, setIsLandscape] = useState(false);
+  // Animation Stage: 'portrait' -> 'rotating' -> 'landscape'
+  const [animStage, setAnimStage] = useState<'portrait' | 'rotating' | 'landscape'>('portrait');
+
+  const triggerRotation = () => {
+    // Stage 1: Rotate counter-clockwise (-90deg) so Top Screen goes to LEFT and Button goes to RIGHT
+    setAnimStage('rotating');
+    setTimeout(() => {
+      // Stage 2: Switch to widescreen landscape layout which has Screen on LEFT and Button on RIGHT
+      setAnimStage('landscape');
+    }, 550);
+  };
+
+  const triggerRotateBack = () => {
+    setAnimStage('rotating');
+    setTimeout(() => {
+      setAnimStage('portrait');
+    }, 450);
+  };
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -53,47 +63,35 @@ export default function RegisterPage() {
         }),
       });
 
-      const data = await res.json();
-      
-      // If already registered, attempt login
       if (!res.ok && res.status === 409) {
         await fetch('/api/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password }),
+          body: JSON.stringify({ 
+            email: email || 'student@scalyth.tech', 
+            password: password || 'pass1234' 
+          }),
         });
       } else if (!res.ok) {
+        const data = await res.json();
         throw new Error(data.error || 'Registration failed');
       }
 
-      // Trigger Cinema-Grade Device Rotation & Landscape Zoom Transition!
-      triggerRotationSequence();
+      setLoading(false);
+      triggerRotation();
     } catch (err: any) {
       setError(err.message);
       setLoading(false);
     }
   };
 
-  const triggerRotationSequence = () => {
-    setLoading(false);
-    setIsRotating(true);
-    setTimeout(() => {
-      setIsLandscape(true);
-      setIsRotating(false);
-    }, 600);
-  };
-
-  const handleDemoInstantTest = () => {
-    if (!fullName) setFullName('Tanmay Tuli');
-    if (!email) setEmail('tanmay@scalyth.tech');
-    if (!password) setPassword('password123');
-    triggerRotationSequence();
-  };
+  const isLandscape = animStage === 'landscape';
+  const isRotating = animStage === 'rotating';
 
   return (
-    <div className="min-h-screen bg-[#09090C] text-zinc-100 flex flex-col justify-between selection:bg-amber-500/30 selection:text-amber-200">
+    <div className="min-h-screen bg-[#09090C] text-zinc-100 flex flex-col justify-between selection:bg-amber-500/30 selection:text-amber-200 overflow-x-hidden">
       {/* Top Header Navigation */}
-      <header className="px-6 py-5 border-b border-zinc-800/80 flex items-center justify-between max-w-7xl mx-auto w-full">
+      <header className="px-6 py-5 border-b border-zinc-850 flex items-center justify-between max-w-7xl mx-auto w-full">
         <Link href="/" className="inline-flex items-center gap-2.5 group">
           <div className="w-8 h-8 rounded-xl bg-zinc-900 border border-zinc-700/80 flex items-center justify-center text-white shadow-xs group-hover:border-zinc-500 transition">
             <Mic2 className="w-4 h-4 text-amber-400" />
@@ -101,23 +99,20 @@ export default function RegisterPage() {
           <span className="font-bold text-lg tracking-tight text-white">
             Lecture<span className="text-amber-500">Pod</span>
           </span>
-          <span className="hidden sm:inline-block text-[11px] font-mono px-2 py-0.5 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-400">
-            {isLandscape ? 'HARDWARE CONSOLE • LANDSCAPE MODE' : 'DEVICE ENROLLMENT'}
-          </span>
         </Link>
 
         <div className="flex items-center gap-3">
           {!isLandscape ? (
             <button
-              onClick={handleDemoInstantTest}
+              onClick={triggerRotation}
               className="text-xs font-semibold px-3 py-1.5 rounded-xl bg-amber-500/10 text-amber-300 border border-amber-500/30 hover:bg-amber-500/20 transition flex items-center gap-1.5"
             >
               <RotateCw className="w-3.5 h-3.5 text-amber-400" />
-              <span>Preview Rotate Transition</span>
+              <span>Preview Rotate</span>
             </button>
           ) : (
             <button
-              onClick={() => setIsLandscape(false)}
+              onClick={triggerRotateBack}
               className="text-xs font-semibold px-3 py-1.5 rounded-xl bg-zinc-850 hover:bg-zinc-800 text-zinc-300 border border-zinc-750 transition flex items-center gap-1.5"
             >
               <RotateCw className="w-3.5 h-3.5" />
@@ -134,11 +129,11 @@ export default function RegisterPage() {
         </div>
       </header>
 
-      {/* Main Viewport Area */}
+      {/* Main Viewport */}
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 flex flex-col items-center justify-center">
         
-        {/* Title above device (portrait mode only) */}
-        {!isLandscape && (
+        {/* Title above device (Portrait only) */}
+        {!isLandscape && !isRotating && (
           <div className="text-center max-w-xl mx-auto mb-8 transition-opacity duration-300">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-[11px] font-mono text-zinc-400 mb-3">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -148,26 +143,31 @@ export default function RegisterPage() {
               Provision Your LecturePod Account
             </h1>
             <p className="mt-1.5 text-xs text-zinc-400">
-              Complete registration to rotate into your hardware control deck
+              Register your credentials to unlock your classroom workspace
             </p>
           </div>
         )}
 
-        {/* ================= ROTATING / LANDSCAPE DEVICE CONTAINER ================= */}
-        <div 
-          className={`w-full flex justify-center items-center transition-all duration-700 ease-out transform ${
-            isRotating ? 'rotate-90 scale-90 opacity-60' : 'rotate-0 scale-100 opacity-100'
-          }`}
-        >
+        {/* ================= ANIMATED DEVICE CONTAINER ================= */}
+        <div className="w-full flex justify-center items-center">
+          
+          {/* 1. PORTRAIT / ROTATING TRANSITION STATE */}
           {!isLandscape ? (
-            /* ================= 1. PORTRAIT REGISTRATION CHASSIS ================= */
-            <div className="w-full max-w-md">
+            <div 
+              style={{
+                transition: 'transform 550ms cubic-bezier(0.2, 0.9, 0.3, 1), opacity 550ms ease-out',
+                transform: isRotating ? 'rotate(-90deg) scale(0.92)' : 'rotate(0deg) scale(1)',
+                opacity: isRotating ? 0.75 : 1,
+                transformOrigin: 'center center',
+              }}
+              className="w-full max-w-md flex justify-center"
+            >
               <form onSubmit={handleSubmit} className="w-full">
                 <LecturePodDevice
                   isSubmitting={loading}
                   onButtonPress={() => handleSubmit()}
                   buttonLabel="Press Illuminated Button to Register"
-                  statusText="ENROLLING..."
+                  statusText="READY"
                 >
                   {error && (
                     <div className="mb-3 p-2.5 rounded-xl bg-red-950/80 border border-red-800/80 text-red-300 text-[11px] flex items-center gap-2">
@@ -230,7 +230,7 @@ export default function RegisterPage() {
                       {loading ? (
                         <>
                           <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-400" />
-                          <span>Provisioning & Rotating...</span>
+                          <span>Provisioning...</span>
                         </>
                       ) : (
                         <>
@@ -244,26 +244,30 @@ export default function RegisterPage() {
               </form>
             </div>
           ) : (
-            /* ================= 2. ZOOMED LANDSCAPE HARDWARE CONSOLE WITH 3 OPTIONS ================= */
-            <div className="w-full max-w-6xl animate-fadeIn">
-              
-              {/* Landscape Physical Device Frame */}
+            /* ================= 2. ZOOMED LANDSCAPE HARDWARE CONSOLE WITH 3 CLEAN OPTIONS ================= */
+            <div 
+              style={{
+                animation: 'scaleIn 450ms cubic-bezier(0.16, 1, 0.3, 1) forwards'
+              }}
+              className="w-full max-w-6xl"
+            >
+              {/* Landscape Device Frame */}
               <div className="relative w-full bg-[#121215] border border-zinc-700/80 rounded-[48px] p-6 sm:p-8 shadow-[0_35px_80px_-15px_rgba(0,0,0,0.9),0_0_0_1px_rgba(255,255,255,0.08),inset_0_1px_2px_rgba(255,255,255,0.15)] flex flex-col lg:flex-row items-center gap-6">
                 
-                {/* Upper / Left Edge Microphone Pinholes */}
+                {/* Top Pinhole Microphones */}
                 <div className="absolute top-4 left-1/2 -translate-x-1/2 flex items-center gap-2 pointer-events-none">
                   <div className="w-2 h-2 rounded-full bg-zinc-800 border border-zinc-700 shadow-inner" />
                   <div className="w-1.5 h-1.5 rounded-full bg-zinc-800 border border-zinc-700/60 shadow-inner" />
                 </div>
 
-                {/* ================= ZOOMED OLED WIDESCREEN DISPLAY ================= */}
+                {/* ================= ZOOMED OLED DISPLAY ================= */}
                 <div className="relative flex-1 w-full rounded-[32px] bg-[#070709] border border-zinc-800/90 shadow-[inset_0_2px_16px_rgba(0,0,0,0.95)] p-6 sm:p-8 overflow-hidden">
-                  {/* Subtle OLED Glass Specular Glare */}
+                  {/* Subtle Glass Specular Reflection */}
                   <div className="absolute -top-32 -left-32 w-96 h-64 bg-gradient-to-br from-white/[0.06] via-transparent to-transparent rotate-12 pointer-events-none rounded-full blur-md" />
 
-                  {/* Top OLED Status Telemetry Bar */}
-                  <div className="flex flex-wrap items-center justify-between text-xs font-mono pb-4 border-b border-zinc-900 relative z-10 gap-3">
-                    {/* Left: Live Audio VU / REC Indicator */}
+                  {/* Clean OLED Header (Zero Gimmicky Text) */}
+                  <div className="flex items-center justify-between text-xs font-mono pb-4 border-b border-zinc-900 relative z-10">
+                    {/* Left: REC Indicator & Waveform */}
                     <div className="flex items-center gap-2">
                       <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.9)]" />
                       <span className="text-red-400 font-bold tracking-wider">REC</span>
@@ -280,14 +284,7 @@ export default function RegisterPage() {
                       </div>
                     </div>
 
-                    {/* Center: Student Name & Orientation */}
-                    <div className="text-zinc-400 text-[11px] flex items-center gap-2">
-                      <span className="text-amber-400 font-bold uppercase">{fullName || 'Tanmay Tuli'}</span>
-                      <span className="text-zinc-600">•</span>
-                      <span className="text-emerald-400 font-semibold">DEVICE UNLOCKED &bull; LANDSCAPE</span>
-                    </div>
-
-                    {/* Right: Battery & Network */}
+                    {/* Right: Battery & Network Status */}
                     <div className="flex items-center gap-3 text-zinc-400 text-[11px]">
                       <span className="text-emerald-400 flex items-center gap-1 font-bold">
                         <BatteryCharging className="w-3.5 h-3.5" /> 85%
@@ -296,20 +293,20 @@ export default function RegisterPage() {
                     </div>
                   </div>
 
-                  {/* ================= THE 3 BIG CARDS INSIDE SCREEN ================= */}
+                  {/* ================= THE 3 CLEAN OPTIONS ================= */}
                   <div className="py-6 relative z-10">
                     <div className="text-center max-w-xl mx-auto mb-6">
                       <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
                         Select Your LecturePod Workspace
                       </h2>
                       <p className="text-xs text-zinc-400 mt-1">
-                        Tap an option below to enter your hardware controls, study material, or test arena
+                        Configure your device, start studying, or launch a test arena
                       </p>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                       
-                      {/* ================= OPTION 1: CONFIGURE LECTUREPOD DEVICE ================= */}
+                      {/* ================= OPTION 1: CONFIGURE DEVICE ================= */}
                       <div 
                         onClick={() => router.push('/devices')}
                         className="group cursor-pointer bg-[#0D0D10] hover:bg-[#15151A] border border-zinc-800 hover:border-zinc-600 rounded-2xl p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
@@ -329,13 +326,8 @@ export default function RegisterPage() {
                           </h3>
 
                           <p className="text-xs text-zinc-400 leading-relaxed">
-                            Pair hardware unit, inspect offline queues, calibrate auto-sync, or simulate edge telemetry.
+                            Pair hardware unit, inspect offline queues, and auto-sync recordings.
                           </p>
-
-                          <div className="pt-2 text-[11px] font-mono text-zinc-500 flex items-center gap-1.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                            <span>10.5 &times; 6.5 cm &bull; Online</span>
-                          </div>
                         </div>
 
                         <div className="mt-5 pt-3 border-t border-zinc-850 flex items-center justify-between text-xs font-bold text-white group-hover:text-amber-400 transition">
@@ -364,13 +356,8 @@ export default function RegisterPage() {
                           </h3>
 
                           <p className="text-xs text-zinc-400 leading-relaxed">
-                            Classroom audios, synced transcripts, AI synthesized notes, 3D cards, and AI doubt mentor.
+                            Classroom audios, synced transcripts, AI synthesized notes, and flashcards.
                           </p>
-
-                          <div className="pt-2 text-[11px] font-mono text-zinc-500 flex items-center gap-1.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-sky-400" />
-                            <span>Audio &rarr; Notes &rarr; AI Mentor</span>
-                          </div>
                         </div>
 
                         <div className="mt-5 pt-3 border-t border-zinc-850 flex items-center justify-between text-xs font-bold text-white group-hover:text-sky-400 transition">
@@ -399,13 +386,8 @@ export default function RegisterPage() {
                           </h3>
 
                           <p className="text-xs text-zinc-400 leading-relaxed">
-                            Timed practice quizzes, 3D flip card decks, score analytics, and midterm mastery tests.
+                            Timed practice quizzes, 3D flip card decks, and exam readiness.
                           </p>
-
-                          <div className="pt-2 text-[11px] font-mono text-zinc-500 flex items-center gap-1.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                            <span>Exam Quizzes &amp; Decks</span>
-                          </div>
                         </div>
 
                         <div className="mt-5 pt-3 border-t border-zinc-850 flex items-center justify-between text-xs font-bold text-white group-hover:text-amber-300 transition">
@@ -417,19 +399,18 @@ export default function RegisterPage() {
                     </div>
                   </div>
 
-                  {/* OLED Bottom Telemetry */}
+                  {/* Clean Bottom Bar */}
                   <div className="pt-3 border-t border-zinc-900 flex items-center justify-between text-[11px] font-mono text-zinc-500 relative z-10">
                     <span className="text-emerald-400/90 flex items-center gap-1.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                      LP-CHASSIS OS v1.2 &bull; AUTONOMOUS DUAL-CORE
+                      CONNECTED
                     </span>
-                    <span className="text-zinc-400">READY FOR DISPATCH</span>
+                    <span className="text-zinc-500">STANDBY</span>
                   </div>
                 </div>
 
-                {/* ================= RIGHT CONTROL BEZEL (PHYSICAL CONTROLS IN LANDSCAPE) ================= */}
+                {/* ================= RIGHT CONTROL BEZEL (PHYSICAL BUTTON) ================= */}
                 <div className="flex lg:flex-col items-center justify-between lg:justify-center gap-5 p-2 shrink-0">
-                  {/* The Glowing Button anchored on side bezel */}
                   <div className="flex flex-col items-center gap-2">
                     <div 
                       onClick={() => router.push('/dashboard')}
@@ -438,12 +419,9 @@ export default function RegisterPage() {
                     >
                       <div className="w-6 h-6 rounded-[5px] bg-red-600 shadow-[0_0_12px_rgba(220,38,38,0.9)] group-hover:bg-red-500 transition-colors" />
                     </div>
-                    <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest text-center">
-                      Tap To Dashboard
-                    </span>
                   </div>
 
-                  {/* Silkscreen Logo */}
+                  {/* Laser-Engraved Silkscreen Branding */}
                   <div className="text-center pt-2">
                     <span className="text-xs font-bold tracking-widest text-zinc-400/80 uppercase">
                       Lecture Pod
@@ -461,8 +439,22 @@ export default function RegisterPage() {
 
       {/* Footer */}
       <footer className="py-4 border-t border-zinc-900 text-center text-xs text-zinc-600 font-mono">
-        LecturePod Hardware Suite &bull; Autonomous Classroom Capture System &bull; &copy; 2026
+        LecturePod Hardware Suite &bull; &copy; 2026
       </footer>
+
+      {/* CSS Animation Keyframe */}
+      <style jsx global>{`
+        @keyframes scaleIn {
+          from {
+            opacity: 0;
+            transform: scale(0.92);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+      `}</style>
     </div>
   );
 }

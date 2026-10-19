@@ -7,7 +7,6 @@ import {
   Mic2, 
   AlertCircle, 
   Loader2, 
-  Sparkles, 
   KeyRound, 
   Mail, 
   ChevronRight,
@@ -27,19 +26,22 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Transition and Landscape states
-  const [isRotating, setIsRotating] = useState(false);
-  const [isLandscape, setIsLandscape] = useState(false);
-  const [studentName, setStudentName] = useState('Student');
+  // Animation Stage: 'portrait' -> 'rotating' -> 'landscape'
+  const [animStage, setAnimStage] = useState<'portrait' | 'rotating' | 'landscape'>('portrait');
 
-  const triggerRotationSequence = (name?: string) => {
-    if (name) setStudentName(name);
-    setLoading(false);
-    setIsRotating(true);
+  const triggerRotation = () => {
+    // Rotate counter-clockwise (-90deg) so Top Screen goes to LEFT and Button goes to RIGHT
+    setAnimStage('rotating');
     setTimeout(() => {
-      setIsLandscape(true);
-      setIsRotating(false);
-    }, 600);
+      setAnimStage('landscape');
+    }, 550);
+  };
+
+  const triggerRotateBack = () => {
+    setAnimStage('rotating');
+    setTimeout(() => {
+      setAnimStage('portrait');
+    }, 450);
   };
 
   const handleSubmit = async (e?: React.FormEvent) => {
@@ -54,12 +56,13 @@ export default function LoginPage() {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await res.json();
       if (!res.ok) {
+        const data = await res.json();
         throw new Error(data.error || 'Login failed. Please check your credentials.');
       }
 
-      triggerRotationSequence(data.user?.full_name);
+      setLoading(false);
+      triggerRotation();
     } catch (err: any) {
       setError(err.message);
       setLoading(false);
@@ -70,8 +73,7 @@ export default function LoginPage() {
     setError(null);
     setLoading(true);
     try {
-      // Auto-register or login as demo student
-      const res = await fetch('/api/auth/register', {
+      await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -86,7 +88,7 @@ export default function LoginPage() {
         }),
       });
 
-      const loginRes = await fetch('/api/auth/login', {
+      await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -95,18 +97,21 @@ export default function LoginPage() {
         }),
       });
 
-      const loginData = await loginRes.json();
-      triggerRotationSequence(loginData.user?.full_name || 'Aarav Sharma');
+      setLoading(false);
+      triggerRotation();
     } catch (err: any) {
       setError(err.message);
       setLoading(false);
     }
   };
 
+  const isLandscape = animStage === 'landscape';
+  const isRotating = animStage === 'rotating';
+
   return (
-    <div className="min-h-screen bg-[#09090C] text-zinc-100 flex flex-col justify-between selection:bg-amber-500/30 selection:text-amber-200">
+    <div className="min-h-screen bg-[#09090C] text-zinc-100 flex flex-col justify-between selection:bg-amber-500/30 selection:text-amber-200 overflow-x-hidden">
       {/* Top Header Navigation */}
-      <header className="px-6 py-5 border-b border-zinc-800/80 flex items-center justify-between max-w-7xl mx-auto w-full">
+      <header className="px-6 py-5 border-b border-zinc-850 flex items-center justify-between max-w-7xl mx-auto w-full">
         <Link href="/" className="inline-flex items-center gap-2.5 group">
           <div className="w-8 h-8 rounded-xl bg-zinc-900 border border-zinc-700/80 flex items-center justify-center text-white shadow-xs group-hover:border-zinc-500 transition">
             <Mic2 className="w-4 h-4 text-amber-400" />
@@ -114,23 +119,20 @@ export default function LoginPage() {
           <span className="font-bold text-lg tracking-tight text-white">
             Lecture<span className="text-amber-500">Pod</span>
           </span>
-          <span className="hidden sm:inline-block text-[11px] font-mono px-2 py-0.5 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-400">
-            {isLandscape ? 'HARDWARE CONSOLE • LANDSCAPE MODE' : 'DEVICE OS v1.2'}
-          </span>
         </Link>
 
         <div className="flex items-center gap-3">
           {!isLandscape ? (
             <button
-              onClick={() => triggerRotationSequence('Tanmay Tuli')}
+              onClick={triggerRotation}
               className="text-xs font-semibold px-3 py-1.5 rounded-xl bg-amber-500/10 text-amber-300 border border-amber-500/30 hover:bg-amber-500/20 transition flex items-center gap-1.5"
             >
               <RotateCw className="w-3.5 h-3.5 text-amber-400" />
-              <span>Preview Rotate Transition</span>
+              <span>Preview Rotate</span>
             </button>
           ) : (
             <button
-              onClick={() => setIsLandscape(false)}
+              onClick={triggerRotateBack}
               className="text-xs font-semibold px-3 py-1.5 rounded-xl bg-zinc-850 hover:bg-zinc-800 text-zinc-300 border border-zinc-750 transition flex items-center gap-1.5"
             >
               <RotateCw className="w-3.5 h-3.5" />
@@ -151,7 +153,7 @@ export default function LoginPage() {
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 flex flex-col items-center justify-center">
         
         {/* Title (Portrait Mode only) */}
-        {!isLandscape && (
+        {!isLandscape && !isRotating && (
           <div className="text-center max-w-xl mx-auto mb-8 transition-opacity duration-300">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-[11px] font-mono text-zinc-400 mb-3">
               <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
@@ -161,26 +163,31 @@ export default function LoginPage() {
               Sign In with Your LecturePod
             </h1>
             <p className="mt-1.5 text-xs text-zinc-400">
-              Enter credentials inside the pod screen or press the illuminated button to authenticate
+              Enter credentials inside the pod screen or press the illuminated button
             </p>
           </div>
         )}
 
-        {/* ================= ROTATING / LANDSCAPE DEVICE CONTAINER ================= */}
-        <div 
-          className={`w-full flex justify-center items-center transition-all duration-700 ease-out transform ${
-            isRotating ? 'rotate-90 scale-90 opacity-60' : 'rotate-0 scale-100 opacity-100'
-          }`}
-        >
+        {/* ================= ANIMATED DEVICE CONTAINER ================= */}
+        <div className="w-full flex justify-center items-center">
+          
+          {/* 1. PORTRAIT / ROTATING FORM STATE */}
           {!isLandscape ? (
-            /* ================= 1. PORTRAIT LOGIN CHASSIS ================= */
-            <div className="w-full max-w-md">
+            <div 
+              style={{
+                transition: 'transform 550ms cubic-bezier(0.2, 0.9, 0.3, 1), opacity 550ms ease-out',
+                transform: isRotating ? 'rotate(-90deg) scale(0.92)' : 'rotate(0deg) scale(1)',
+                opacity: isRotating ? 0.75 : 1,
+                transformOrigin: 'center center',
+              }}
+              className="w-full max-w-md flex justify-center"
+            >
               <form onSubmit={handleSubmit} className="w-full">
                 <LecturePodDevice
                   isSubmitting={loading}
                   onButtonPress={() => handleSubmit()}
                   buttonLabel="Press Illuminated Button to Log In"
-                  statusText="STANDBY / READY"
+                  statusText="STANDBY"
                 >
                   {error && (
                     <div className="mb-3 p-2.5 rounded-xl bg-red-950/80 border border-red-800/80 text-red-300 text-[11px] flex items-center gap-2">
@@ -237,7 +244,7 @@ export default function LoginPage() {
                       {loading ? (
                         <>
                           <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-400" />
-                          <span>Verifying & Rotating...</span>
+                          <span>Verifying...</span>
                         </>
                       ) : (
                         <>
@@ -251,8 +258,13 @@ export default function LoginPage() {
               </form>
             </div>
           ) : (
-            /* ================= 2. ZOOMED LANDSCAPE HARDWARE CONSOLE WITH 3 OPTIONS ================= */
-            <div className="w-full max-w-6xl animate-fadeIn">
+            /* ================= 2. ZOOMED LANDSCAPE HARDWARE CONSOLE WITH 3 CLEAN OPTIONS ================= */
+            <div 
+              style={{
+                animation: 'scaleIn 450ms cubic-bezier(0.16, 1, 0.3, 1) forwards'
+              }}
+              className="w-full max-w-6xl"
+            >
               <div className="relative w-full bg-[#121215] border border-zinc-700/80 rounded-[48px] p-6 sm:p-8 shadow-[0_35px_80px_-15px_rgba(0,0,0,0.9),0_0_0_1px_rgba(255,255,255,0.08),inset_0_1px_2px_rgba(255,255,255,0.15)] flex flex-col lg:flex-row items-center gap-6">
                 
                 {/* Upper Pinhole Microphones */}
@@ -265,8 +277,8 @@ export default function LoginPage() {
                 <div className="relative flex-1 w-full rounded-[32px] bg-[#070709] border border-zinc-800/90 shadow-[inset_0_2px_16px_rgba(0,0,0,0.95)] p-6 sm:p-8 overflow-hidden">
                   <div className="absolute -top-32 -left-32 w-96 h-64 bg-gradient-to-br from-white/[0.06] via-transparent to-transparent rotate-12 pointer-events-none rounded-full blur-md" />
 
-                  {/* OLED Header Telemetry Bar */}
-                  <div className="flex flex-wrap items-center justify-between text-xs font-mono pb-4 border-b border-zinc-900 relative z-10 gap-3">
+                  {/* Clean OLED Header */}
+                  <div className="flex items-center justify-between text-xs font-mono pb-4 border-b border-zinc-900 relative z-10">
                     <div className="flex items-center gap-2">
                       <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.9)]" />
                       <span className="text-red-400 font-bold tracking-wider">REC</span>
@@ -283,12 +295,6 @@ export default function LoginPage() {
                       </div>
                     </div>
 
-                    <div className="text-zinc-400 text-[11px] flex items-center gap-2">
-                      <span className="text-amber-400 font-bold uppercase">{studentName}</span>
-                      <span className="text-zinc-600">•</span>
-                      <span className="text-emerald-400 font-semibold">AUTHENTICATED &bull; LANDSCAPE</span>
-                    </div>
-
                     <div className="flex items-center gap-3 text-zinc-400 text-[11px]">
                       <span className="text-emerald-400 flex items-center gap-1 font-bold">
                         <BatteryCharging className="w-3.5 h-3.5" /> 85%
@@ -297,14 +303,14 @@ export default function LoginPage() {
                     </div>
                   </div>
 
-                  {/* The 3 Cards */}
+                  {/* The 3 Clean Cards */}
                   <div className="py-6 relative z-10">
                     <div className="text-center max-w-xl mx-auto mb-6">
                       <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
                         Select Your LecturePod Workspace
                       </h2>
                       <p className="text-xs text-zinc-400 mt-1">
-                        Tap an option below to enter your hardware controls, study material, or test arena
+                        Configure your device, start studying, or launch a test arena
                       </p>
                     </div>
 
@@ -330,13 +336,8 @@ export default function LoginPage() {
                           </h3>
 
                           <p className="text-xs text-zinc-400 leading-relaxed">
-                            Pair hardware unit, inspect offline queues, calibrate auto-sync, or simulate edge telemetry.
+                            Pair hardware unit, inspect offline queues, and auto-sync recordings.
                           </p>
-
-                          <div className="pt-2 text-[11px] font-mono text-zinc-500 flex items-center gap-1.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                            <span>10.5 &times; 6.5 cm &bull; Online</span>
-                          </div>
                         </div>
 
                         <div className="mt-5 pt-3 border-t border-zinc-850 flex items-center justify-between text-xs font-bold text-white group-hover:text-amber-400 transition">
@@ -365,13 +366,8 @@ export default function LoginPage() {
                           </h3>
 
                           <p className="text-xs text-zinc-400 leading-relaxed">
-                            Classroom audios, synced transcripts, AI synthesized notes, 3D cards, and AI doubt mentor.
+                            Classroom audios, synced transcripts, AI synthesized notes, and flashcards.
                           </p>
-
-                          <div className="pt-2 text-[11px] font-mono text-zinc-500 flex items-center gap-1.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-sky-400" />
-                            <span>Audio &rarr; Notes &rarr; AI Mentor</span>
-                          </div>
                         </div>
 
                         <div className="mt-5 pt-3 border-t border-zinc-850 flex items-center justify-between text-xs font-bold text-white group-hover:text-sky-400 transition">
@@ -400,13 +396,8 @@ export default function LoginPage() {
                           </h3>
 
                           <p className="text-xs text-zinc-400 leading-relaxed">
-                            Timed practice quizzes, 3D flip card decks, score analytics, and midterm mastery tests.
+                            Timed practice quizzes, 3D flip card decks, and exam readiness.
                           </p>
-
-                          <div className="pt-2 text-[11px] font-mono text-zinc-500 flex items-center gap-1.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                            <span>Exam Quizzes &amp; Decks</span>
-                          </div>
                         </div>
 
                         <div className="mt-5 pt-3 border-t border-zinc-850 flex items-center justify-between text-xs font-bold text-white group-hover:text-amber-300 transition">
@@ -418,13 +409,13 @@ export default function LoginPage() {
                     </div>
                   </div>
 
-                  {/* OLED Telemetry Footer */}
+                  {/* Clean Bottom Bar */}
                   <div className="pt-3 border-t border-zinc-900 flex items-center justify-between text-[11px] font-mono text-zinc-500 relative z-10">
                     <span className="text-emerald-400/90 flex items-center gap-1.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                      LP-CHASSIS OS v1.2 &bull; AUTONOMOUS DUAL-CORE
+                      CONNECTED
                     </span>
-                    <span className="text-zinc-400">READY FOR DISPATCH</span>
+                    <span className="text-zinc-500">STANDBY</span>
                   </div>
                 </div>
 
@@ -438,9 +429,6 @@ export default function LoginPage() {
                     >
                       <div className="w-6 h-6 rounded-[5px] bg-red-600 shadow-[0_0_12px_rgba(220,38,38,0.9)] group-hover:bg-red-500 transition-colors" />
                     </div>
-                    <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest text-center">
-                      Tap To Dashboard
-                    </span>
                   </div>
 
                   <div className="text-center pt-2">
@@ -459,8 +447,22 @@ export default function LoginPage() {
 
       {/* Footer */}
       <footer className="py-4 border-t border-zinc-900 text-center text-xs text-zinc-600 font-mono">
-        LecturePod Hardware Suite &bull; Autonomous Classroom Capture System &bull; &copy; 2026
+        LecturePod Hardware Suite &bull; &copy; 2026
       </footer>
+
+      {/* CSS Animation Keyframe */}
+      <style jsx global>{`
+        @keyframes scaleIn {
+          from {
+            opacity: 0;
+            transform: scale(0.92);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+      `}</style>
     </div>
   );
 }
