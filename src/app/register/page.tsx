@@ -94,55 +94,15 @@ export default function RegisterPage() {
           </p>
         </div>
 
-        {/* 2-Column Layout */}
-        <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-center max-w-5xl">
-          
-          {/* Left Column: Device Highlights & Photo Showcase */}
-          <div className="order-2 lg:order-1 lg:col-span-6 space-y-6">
-            <div className="bg-[#121216] border border-zinc-800/80 rounded-3xl p-6 shadow-xl relative overflow-hidden">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-amber-400 font-mono block mb-3">
-                LecturePod Hardware Architecture
-              </span>
-              
-              <div className="relative rounded-2xl overflow-hidden border border-zinc-800 mb-4 bg-zinc-950">
-                <img 
-                  src="/images/lecturepod-showcase.png" 
-                  alt="LecturePod Showcase" 
-                  className="w-full h-52 object-cover object-left opacity-90"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#121216] via-transparent to-transparent" />
-                <div className="absolute bottom-3 left-3 right-3 text-xs font-mono text-zinc-300 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-xl border border-zinc-800/80 flex items-center justify-between">
-                  <span>10.5 &times; 6.5 &times; 2.0 cm</span>
-                  <span className="text-emerald-400">USB-C Fast Sync</span>
-                </div>
-              </div>
-
-              <div className="space-y-2.5 text-xs text-zinc-300">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0" />
-                  <span>Automatic background upload over Wi-Fi / Hotspot</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0" />
-                  <span>AI lecture synthesizer (Notes, 3D Flashcards, Practice Quizzes)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0" />
-                  <span>Hinglish & English conceptual doubt solver</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Column: Physical Device Housing Registration Form */}
-          <div className="order-1 lg:order-2 lg:col-span-6 flex justify-center">
-            <form onSubmit={handleSubmit} className="w-full">
-              <LecturePodDevice
-                isSubmitting={loading}
-                onButtonPress={() => handleSubmit()}
-                buttonLabel="Press Illuminated Button to Register"
-                statusText="ENROLLING..."
-              >
+        {/* Centered Device Container */}
+        <div className="w-full flex justify-center items-center max-w-md">
+          <form onSubmit={handleSubmit} className="w-full">
+            <LecturePodDevice
+              isSubmitting={loading}
+              onButtonPress={() => handleSubmit()}
+              buttonLabel="Press Illuminated Button to Register"
+              statusText="ENROLLING..."
+            >
                 {error && (
                   <div className="mb-3 p-2.5 rounded-xl bg-red-950/80 border border-red-800/80 text-red-300 text-[11px] flex items-center gap-2">
                     <AlertCircle className="w-3.5 h-3.5 shrink-0 text-red-400" />
@@ -217,8 +177,6 @@ export default function RegisterPage() {
               </LecturePodDevice>
             </form>
           </div>
-
-        </div>
       </main>
 
       {/* Footer */}
