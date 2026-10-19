@@ -255,6 +255,17 @@ export default function DashboardPortalHub() {
                 Pair your physical recording unit, inspect local offline audio queue, calibrate Wi-Fi auto-sync, or run edge simulation diagnostics.
               </p>
 
+              {/* Hardware Visual Preview */}
+              <div className="mt-4 flex items-center gap-3 p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-100 dark:border-zinc-800">
+                <div className="w-10 h-14 bg-black rounded-xl p-1 flex items-center justify-center shrink-0 border border-zinc-800 shadow-sm">
+                  <img src="/images/profile-front.png" alt="LecturePod Unit" className="h-full object-contain filter drop-shadow-sm" />
+                </div>
+                <div className="text-xs space-y-0.5">
+                  <span className="font-bold text-zinc-900 dark:text-zinc-100 block">LecturePod Studio Unit</span>
+                  <span className="text-[11px] text-zinc-500 font-mono block">10.5 &times; 6.5 cm &bull; USB-C Sync</span>
+                </div>
+              </div>
+
               {/* Hardware Micro-Badge Telemetry */}
               <div className="mt-6 p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-100 dark:border-zinc-800/80 space-y-2">
                 <div className="flex items-center justify-between text-xs font-semibold">

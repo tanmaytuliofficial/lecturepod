@@ -23,6 +23,7 @@ import {
   BatteryCharging,
   Fingerprint
 } from 'lucide-react';
+import { DeviceScrollShowcase } from '@/components/DeviceScrollShowcase';
 
 export default function LandingPage() {
   return (
@@ -100,49 +101,43 @@ export default function LandingPage() {
 
               {/* Hardware & Workspace Showcase */}
               <div className="p-6 md:p-8 grid grid-cols-1 md:grid-cols-12 gap-6 bg-gradient-to-b from-zinc-900 to-zinc-950 rounded-b-2xl">
-                {/* Physical Hardware Representation (4 cols) */}
-                <div className="md:col-span-5 bg-zinc-900/80 p-6 rounded-2xl border border-zinc-800 flex flex-col justify-between relative overflow-hidden group">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl pointer-events-none" />
+                {/* Physical Hardware Representation (5 cols) */}
+                <div className="md:col-span-5 bg-zinc-900/90 p-5 rounded-2xl border border-zinc-800 flex flex-col justify-between relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 w-36 h-36 bg-amber-500/10 rounded-full blur-2xl pointer-events-none" />
 
                   <div>
                     <div className="flex items-center justify-between text-xs text-zinc-400">
-                      <span className="font-mono text-amber-400">DEVICE #LP-STUDIO-84</span>
-                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-950/80 text-emerald-300 border border-emerald-800/80 text-[11px] font-semibold">
-                        Acoustic Active
+                      <span className="font-mono text-amber-400 font-bold">LECTUREPOD HARDWARE</span>
+                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-950/80 text-emerald-300 border border-emerald-800/80 text-[11px] font-semibold flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                        Live Classroom Unit
                       </span>
                     </div>
 
-                    {/* Minimalist Hardware Graphic */}
-                    <div className="my-6 p-6 rounded-2xl bg-zinc-950 border border-zinc-800/90 text-center space-y-3 relative">
-                      <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-600 to-amber-400 flex items-center justify-center mx-auto text-zinc-950 shadow-lg ring-4 ring-amber-400/20">
-                        <Radio className="w-7 h-7" />
-                      </div>
-                      <div>
-                        <h4 className="text-sm font-bold text-white tracking-tight">LecturePod Studio Unit</h4>
-                        <p className="text-xs text-zinc-400 mt-0.5">High-Precision Beamforming Array</p>
-                      </div>
-
-                      {/* Hardware Live VU Waveform */}
-                      <div className="flex items-center justify-center gap-1 pt-2">
-                        {[40, 65, 80, 50, 95, 75, 45, 90, 60, 85, 40].map((h, i) => (
-                          <span
-                            key={i}
-                            className="w-1 bg-amber-400/80 rounded-full animate-pulse"
-                            style={{ height: `${h * 0.28}px`, animationDelay: `${i * 90}ms` }}
-                          />
-                        ))}
+                    {/* Real Physical Device Photo Card */}
+                    <div className="my-4 relative rounded-2xl bg-black/60 border border-zinc-800 p-2 overflow-hidden flex items-center justify-center">
+                      <img 
+                        src="/images/device-hero.png" 
+                        alt="LecturePod Physical Hardware Device" 
+                        className="w-full h-56 object-cover rounded-xl filter drop-shadow-xl group-hover:scale-105 transition-transform duration-500"
+                      />
+                      <div className="absolute bottom-3 left-3 right-3 bg-black/70 backdrop-blur-md px-3 py-1.5 rounded-xl border border-zinc-800/80 flex items-center justify-between text-[11px] font-mono text-zinc-300">
+                        <span className="text-amber-400 flex items-center gap-1">
+                          <Mic2 className="w-3 h-3" /> REC 00:12:36
+                        </span>
+                        <span className="text-emerald-400">85% BATT</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="pt-4 border-t border-zinc-800 text-xs font-mono text-zinc-400 space-y-1.5">
+                  <div className="pt-3 border-t border-zinc-800/80 text-xs font-mono text-zinc-400 space-y-1.5">
                     <div className="flex justify-between">
-                      <span>Offline Cache:</span>
-                      <span className="text-zinc-200 font-semibold">0 in queue (synced)</span>
+                      <span>Dimensions:</span>
+                      <span className="text-zinc-200 font-semibold">10.5 &times; 6.5 &times; 2.0 cm</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Auto-Sync Network:</span>
-                      <span className="text-emerald-400 font-semibold">Wi-Fi Verified</span>
+                      <span>Sync Interface:</span>
+                      <span className="text-emerald-400 font-semibold">Auto Wi-Fi / Hotspot</span>
                     </div>
                   </div>
                 </div>
@@ -194,15 +189,20 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* ================= HARDWARE SPECIFICATION SECTION ================= */}
-        <section id="device" className="py-24 bg-white border-b border-zinc-200/70">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center max-w-2xl mx-auto mb-16">
+        {/* ================= HARDWARE SPECIFICATION & MULTI-PROFILE SHOWCASE ================= */}
+        <section id="device" className="py-16 md:py-24 bg-white border-b border-zinc-200/70">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
+            
+            {/* Multi-Profile Scroll Showcase Component */}
+            <DeviceScrollShowcase />
+
+            {/* Core Architecture Pillars */}
+            <div className="text-center max-w-2xl mx-auto pt-6">
               <span className="text-xs font-bold uppercase tracking-widest text-amber-800">
                 Acoustic Hardware Engineering
               </span>
               <h2 className="text-3xl sm:text-4xl font-extrabold text-zinc-950 mt-2 tracking-tight">
-                The Dedicated LecturePod Device
+                Engineered for Academic Survival
               </h2>
               <p className="text-zinc-600 text-sm mt-3 leading-relaxed">
                 Engineered specifically for lecture halls, laboratories, and seminar rooms. Never drain your phone battery or worry about missing crucial exam hints.

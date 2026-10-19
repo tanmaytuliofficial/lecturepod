@@ -336,8 +336,8 @@ export default function DevicesPage() {
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3.5">
-                      <div className="w-11 h-11 rounded-2xl bg-zinc-950 dark:bg-zinc-800 flex items-center justify-center text-amber-400 ring-1 ring-zinc-800 shadow-sm">
-                        <Radio className="w-5 h-5" />
+                      <div className="w-12 h-16 rounded-2xl bg-zinc-950 dark:bg-zinc-900 border border-zinc-800 p-1 flex items-center justify-center shrink-0 shadow-sm">
+                        <img src="/images/profile-front.png" alt="LecturePod Device" className="h-full object-contain filter drop-shadow-sm" />
                       </div>
                       <div>
                         <h3 className="text-sm font-bold text-zinc-950 dark:text-white flex items-center gap-2">
