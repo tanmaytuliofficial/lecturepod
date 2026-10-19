@@ -60,7 +60,7 @@ function LecturesPageContent() {
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<any>(null);
 
-  // PW-Style Active Offering Tab: all | audios | notes | practice | flashcards | mentor
+  // Active Offering Tab: all | audios | notes | practice | flashcards | mentor
   const initialTab = searchParams.get('tab') || 'all';
   const [activeOfferingTab, setActiveOfferingTab] = useState<string>(initialTab);
 
@@ -315,14 +315,14 @@ function LecturesPageContent() {
         {/* Header Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-zinc-200/80 dark:border-zinc-800/80 gap-4">
           <div>
-            <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-widest bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 mb-1.5">
-              <span>ACADEMIC STUDY PORTAL</span>
+            <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest bg-zinc-100 dark:bg-zinc-850 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-800 mb-1.5">
+              <span>ACADEMIC WORKSPACE</span>
             </div>
             <h1 className="text-2xl font-extrabold text-zinc-950 dark:text-white tracking-tight">
               Classroom Study Library
             </h1>
             <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-              Explore your classroom recordings with PW-style audios, notes, practice problems, flashcards, and AI doubt solver.
+              Explore your classroom recordings with synchronized audios, structured notes, practice problems, flashcards, and AI doubt solver.
             </p>
           </div>
 
@@ -330,10 +330,10 @@ function LecturesPageContent() {
             <button
               onClick={handleSimulateSync}
               disabled={simulatingSync}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-zinc-950 bg-amber-400 hover:bg-amber-300 rounded-xl transition shadow-xs disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-xl transition border border-zinc-200 dark:border-zinc-700 disabled:opacity-50"
               title="Simulate a new classroom lecture upload from hardware"
             >
-              <Zap className="w-3.5 h-3.5 text-zinc-950" />
+              <Zap className="w-3.5 h-3.5 text-amber-500" />
               {simulatingSync ? 'Syncing...' : 'Simulate Audio Sync'}
             </button>
 
@@ -347,7 +347,7 @@ function LecturesPageContent() {
                 setFormError(null);
                 setShowAddModal(true);
               }}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-zinc-950 dark:bg-white dark:text-zinc-950 rounded-xl transition shadow-xs"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-zinc-950 dark:bg-white dark:text-zinc-950 hover:bg-zinc-800 dark:hover:bg-zinc-200 rounded-xl transition shadow-xs"
             >
               <PlusCircle className="w-3.5 h-3.5" />
               <span>Upload Recording</span>
@@ -355,7 +355,7 @@ function LecturesPageContent() {
           </div>
         </div>
 
-        {/* ================= PW-STYLE CATEGORY OFFERINGS TABS ================= */}
+        {/* ================= CATEGORY OFFERINGS TABS ================= */}
         <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none border-b border-zinc-200/80 dark:border-zinc-800/80">
           {[
             { id: 'all', label: 'All Offerings', icon: BookOpen, count: lectures.length },
@@ -363,7 +363,7 @@ function LecturesPageContent() {
             { id: 'notes', label: 'Structured Notes', icon: FileText, count: readyLectures.length },
             { id: 'practice', label: 'Practice Problems (DPP)', icon: HelpCircle, count: readyLectures.length },
             { id: 'flashcards', label: '3D Flashcards', icon: Layers, count: readyLectures.length },
-            { id: 'mentor', label: 'AI Study Mentor', icon: Bot, badge: 'PW STYLE' },
+            { id: 'mentor', label: 'AI Study Mentor', icon: Bot, badge: 'AI COACH' },
           ].map((tab) => {
             const Icon = tab.icon;
             const isActive = activeOfferingTab === tab.id;
@@ -371,7 +371,7 @@ function LecturesPageContent() {
               <button
                 key={tab.id}
                 onClick={() => setActiveOfferingTab(tab.id)}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition ${
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition ${
                   isActive
                     ? 'bg-zinc-950 text-white dark:bg-white dark:text-zinc-950 shadow-sm'
                     : 'bg-white dark:bg-[#121215] text-zinc-600 dark:text-zinc-400 border border-zinc-200/80 dark:border-zinc-800/80 hover:bg-zinc-100 dark:hover:bg-zinc-800'
@@ -387,7 +387,7 @@ function LecturesPageContent() {
                   </span>
                 )}
                 {tab.badge && (
-                  <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded-full bg-purple-500/20 text-purple-600 dark:text-purple-300 border border-purple-500/30">
+                  <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20">
                     {tab.badge}
                   </span>
                 )}
@@ -398,18 +398,18 @@ function LecturesPageContent() {
 
         {/* ================= IF ACTIVE TAB IS AI STUDY MENTOR ================= */}
         {activeOfferingTab === 'mentor' && (
-          <div className="bg-white dark:bg-[#121215] border border-zinc-200/80 dark:border-zinc-800/80 rounded-3xl p-6 sm:p-8 space-y-6 shadow-sm">
+          <div className="bg-white dark:bg-[#111114] border border-zinc-200/80 dark:border-zinc-800 rounded-3xl p-6 sm:p-8 space-y-6 shadow-xs">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-100 dark:border-zinc-800">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800 flex items-center justify-center text-purple-600 dark:text-purple-400">
-                  <Bot className="w-6 h-6" />
+                <div className="w-10 h-10 rounded-2xl bg-zinc-100 dark:bg-zinc-850 border border-zinc-200 dark:border-zinc-800 flex items-center justify-center text-zinc-950 dark:text-white">
+                  <Bot className="w-5 h-5 text-amber-500" />
                 </div>
                 <div>
-                  <h2 className="text-base font-extrabold text-zinc-950 dark:text-white">
+                  <h2 className="text-base font-bold text-zinc-950 dark:text-white">
                     LecturePod AI Study Mentor
                   </h2>
                   <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                    PW-Style Academic Doubt Solver • Grounded in your classroom lectures
+                    Intelligent Conceptual Doubt Solver • Grounded in your classroom lectures
                   </p>
                 </div>
               </div>
@@ -447,7 +447,7 @@ function LecturesPageContent() {
                     key={promptText}
                     onClick={() => handleSendMentorQuestion(promptText)}
                     disabled={mentorLoading}
-                    className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/40 dark:hover:bg-purple-900/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 transition disabled:opacity-50"
+                    className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-850 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200/80 dark:border-zinc-750 transition disabled:opacity-50"
                   >
                     ✨ {promptText}
                   </button>
@@ -479,8 +479,8 @@ function LecturesPageContent() {
                 </div>
               ))}
               {mentorLoading && (
-                <div className="flex items-center gap-2 p-3 text-xs text-purple-600 dark:text-purple-400 font-semibold animate-pulse">
-                  <Bot className="w-4 h-4 animate-spin" />
+                <div className="flex items-center gap-2 p-3 text-xs text-zinc-600 dark:text-zinc-400 font-semibold animate-pulse">
+                  <Bot className="w-4 h-4 animate-spin text-amber-500" />
                   <span>AI Mentor is thinking and analyzing lecture notes...</span>
                 </div>
               )}
@@ -499,12 +499,12 @@ function LecturesPageContent() {
                 value={mentorQuestion}
                 onChange={(e) => setMentorQuestion(e.target.value)}
                 placeholder="Ask any doubt about this lecture (e.g. 'Explain step 2 of Raft consensus')..."
-                className="flex-1 px-4 py-3 rounded-2xl text-xs sm:text-sm bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="flex-1 px-4 py-3 rounded-2xl text-xs sm:text-sm bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:focus:ring-zinc-600"
               />
               <button
                 type="submit"
                 disabled={!mentorQuestion.trim() || mentorLoading}
-                className="px-5 py-3 rounded-2xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs sm:text-sm transition shadow-sm disabled:opacity-50 flex items-center gap-1.5"
+                className="px-5 py-3 rounded-2xl bg-zinc-950 hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200 text-white font-bold text-xs sm:text-sm transition shadow-sm disabled:opacity-50 flex items-center gap-1.5"
               >
                 <span>Ask</span>
                 <Send className="w-3.5 h-3.5" />
@@ -620,7 +620,7 @@ function LecturesPageContent() {
               </div>
             </div>
           ) : layout === 'grid' ? (
-            /* ================= GRID VIEW WITH PW-STYLE WORKFLOW ================= */
+            /* ================= GRID VIEW WITH LECTUREPOD WORKFLOW ================= */
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {lectures.map((lec) => (
                 <div
@@ -659,7 +659,7 @@ function LecturesPageContent() {
                     </div>
                   </div>
 
-                  {/* ================= PW-STYLE OFFERINGS ARROW CHAIN ================= */}
+                  {/* ================= STUDY OFFERINGS ARROW CHAIN ================= */}
                   <div className="mt-5 pt-4 border-t border-zinc-100 dark:border-zinc-800/80 space-y-3">
                     <div className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
                       Study Offerings:
@@ -667,10 +667,10 @@ function LecturesPageContent() {
                     <div className="flex flex-wrap items-center gap-1.5">
                       <Link
                         href={`/lectures/${lec.id}?tab=audio`}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-300 text-[11px] font-bold transition border border-amber-500/20"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 text-[11px] font-semibold transition border border-zinc-200 dark:border-zinc-700"
                         title="Listen to classroom audio"
                       >
-                        <Volume2 className="w-3 h-3" />
+                        <Volume2 className="w-3 h-3 text-zinc-500" />
                         <span>Audios</span>
                       </Link>
 
@@ -678,10 +678,10 @@ function LecturesPageContent() {
 
                       <Link
                         href={`/lectures/${lec.id}?tab=notes`}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-700 dark:text-blue-300 text-[11px] font-bold transition border border-blue-500/20"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 text-[11px] font-semibold transition border border-zinc-200 dark:border-zinc-700"
                         title="Read structured notes"
                       >
-                        <FileText className="w-3 h-3" />
+                        <FileText className="w-3 h-3 text-zinc-500" />
                         <span>Notes</span>
                       </Link>
 
@@ -689,10 +689,10 @@ function LecturesPageContent() {
 
                       <Link
                         href={`/lectures/${lec.id}?tab=quiz`}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-purple-500/10 hover:bg-purple-500/20 text-purple-700 dark:text-purple-300 text-[11px] font-bold transition border border-purple-500/20"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 text-[11px] font-semibold transition border border-zinc-200 dark:border-zinc-700"
                         title="Practice problems & DPP"
                       >
-                        <HelpCircle className="w-3 h-3" />
+                        <HelpCircle className="w-3 h-3 text-zinc-500" />
                         <span>Practice</span>
                       </Link>
 
@@ -700,10 +700,10 @@ function LecturesPageContent() {
 
                       <Link
                         href={`/lectures/${lec.id}?tab=flashcards`}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-[11px] font-bold transition border border-emerald-500/20"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 text-[11px] font-semibold transition border border-zinc-200 dark:border-zinc-700"
                         title="3D Flip flashcards"
                       >
-                        <Layers className="w-3 h-3" />
+                        <Layers className="w-3 h-3 text-zinc-500" />
                         <span>Cards</span>
                       </Link>
 
@@ -714,11 +714,11 @@ function LecturesPageContent() {
                           setMentorLectureId(lec.id);
                           setActiveOfferingTab('mentor');
                         }}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-purple-600 hover:bg-purple-500 text-white text-[11px] font-bold transition shadow-xs"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-zinc-950 text-white dark:bg-white dark:text-zinc-950 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-[11px] font-bold transition shadow-xs"
                         title="Ask AI Mentor doubt solver"
                       >
                         <Bot className="w-3 h-3" />
-                        <span>Mentor</span>
+                        <span>AI Mentor</span>
                       </button>
                     </div>
 
@@ -759,7 +759,7 @@ function LecturesPageContent() {
               ))}
             </div>
           ) : (
-            /* ================= LIST VIEW WITH PW-STYLE WORKFLOW ================= */
+            /* ================= LIST VIEW WITH LECTUREPOD WORKFLOW ================= */
             <div className="bg-white dark:bg-[#121215] border border-zinc-200/80 dark:border-zinc-800/80 rounded-3xl divide-y divide-zinc-100 dark:divide-zinc-800 overflow-hidden shadow-xs">
               {lectures.map((lec) => (
                 <div key={lec.id} className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30 transition">
@@ -789,28 +789,28 @@ function LecturesPageContent() {
                   <div className="flex flex-wrap items-center gap-1.5 shrink-0">
                     <Link
                       href={`/lectures/${lec.id}?tab=audio`}
-                      className="px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-300 text-xs font-bold"
+                      className="px-2.5 py-1 rounded-lg bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 text-xs font-semibold border border-zinc-200 dark:border-zinc-700"
                     >
                       Audios
                     </Link>
                     <ChevronRight className="w-3 h-3 text-zinc-400" />
                     <Link
                       href={`/lectures/${lec.id}?tab=notes`}
-                      className="px-2.5 py-1 rounded-lg bg-blue-500/10 text-blue-700 dark:text-blue-300 text-xs font-bold"
+                      className="px-2.5 py-1 rounded-lg bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 text-xs font-semibold border border-zinc-200 dark:border-zinc-700"
                     >
                       Notes
                     </Link>
                     <ChevronRight className="w-3 h-3 text-zinc-400" />
                     <Link
                       href={`/lectures/${lec.id}?tab=quiz`}
-                      className="px-2.5 py-1 rounded-lg bg-purple-500/10 text-purple-700 dark:text-purple-300 text-xs font-bold"
+                      className="px-2.5 py-1 rounded-lg bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 text-xs font-semibold border border-zinc-200 dark:border-zinc-700"
                     >
                       Practice
                     </Link>
                     <ChevronRight className="w-3 h-3 text-zinc-400" />
                     <Link
                       href={`/lectures/${lec.id}?tab=flashcards`}
-                      className="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-xs font-bold"
+                      className="px-2.5 py-1 rounded-lg bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 text-xs font-semibold border border-zinc-200 dark:border-zinc-700"
                     >
                       Cards
                     </Link>
@@ -820,7 +820,7 @@ function LecturesPageContent() {
                         setMentorLectureId(lec.id);
                         setActiveOfferingTab('mentor');
                       }}
-                      className="px-2.5 py-1 rounded-lg bg-purple-600 text-white text-xs font-bold"
+                      className="px-2.5 py-1 rounded-lg bg-zinc-950 text-white dark:bg-white dark:text-zinc-950 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-xs font-bold transition shadow-xs"
                     >
                       AI Mentor
                     </button>

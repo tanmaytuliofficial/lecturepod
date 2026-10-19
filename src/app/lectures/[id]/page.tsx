@@ -59,7 +59,7 @@ export default function LectureWorkspacePage({
   const [mentorMessages, setMentorMessages] = useState<Array<{ role: 'user' | 'assistant'; text: string }>>([
     {
       role: 'assistant',
-      text: 'Namaste! Main hoon aapka PW-Style AI Mentor. Is lecture ke kisi bhi step, formula ya doubt ko poochhiye — main simple Hinglish/English mein explain karunga!'
+      text: 'Namaste! Main hoon aapka LecturePod AI Mentor. Is lecture ke kisi bhi concept, formula, derivation ya exam question ke baare mein poochhiye — main step-by-step explain karunga!'
     }
   ]);
 

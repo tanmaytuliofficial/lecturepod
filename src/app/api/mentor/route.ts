@@ -62,7 +62,7 @@ Transcript Excerpt: ${(lecture.full_text || '').substring(0, 3000)}
     const openaiKey = process.env.OPENAI_API_KEY;
     const groqKey = process.env.GROQ_API_KEY;
 
-    const systemPrompt = `You are "LecturePod AI Mentor", an elite academic tutor modeled after top professors and educators (like Physics Wallah).
+    const systemPrompt = `You are "LecturePod AI Mentor", an elite university academic tutor and conceptual coach.
 Your role is to explain concepts clearly, patiently, and in an engaging manner.
 Student Name: ${user.full_name}
 Preferred Language: ${user.preferred_language || 'Hinglish'}

@@ -75,8 +75,8 @@ export function StudentLayout({ children, user, breadcrumbs = [], workspace = 'd
               label: 'AI Study Mentor', 
               href: '/lectures?tab=mentor', 
               icon: Bot, 
-              badge: 'PW STYLE', 
-              badgeColor: 'bg-purple-100 text-purple-900 border-purple-300 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-800' 
+              badge: 'AI COACH', 
+              badgeColor: 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20' 
             },
           ],
         },
@@ -187,7 +187,7 @@ export function StudentLayout({ children, user, breadcrumbs = [], workspace = 'd
         </div>
       )}
 
-      {/* ================= LEFT SIDEBAR (PW STYLE) ================= */}
+      {/* ================= LEFT SIDEBAR ================= */}
       {/* Desktop Fixed Sidebar */}
       <aside className="hidden lg:flex fixed inset-y-0 left-0 w-64 flex-col bg-white dark:bg-[#0D0D10] border-r border-zinc-200/80 dark:border-zinc-800/80 z-40 select-none transition-colors duration-200">
         {/* Brand Header */}
@@ -210,7 +210,7 @@ export function StudentLayout({ children, user, breadcrumbs = [], workspace = 'd
           </Link>
         </div>
 
-        {/* Navigation Items (Categorized like PW) */}
+        {/* Navigation Items */}
         <div className="flex-1 overflow-y-auto px-4 py-5 space-y-6">
           {navGroups.map((grp) => (
             <div key={grp.group} className="space-y-1">
@@ -247,19 +247,19 @@ export function StudentLayout({ children, user, breadcrumbs = [], workspace = 'd
 
           {/* Study Mode: AI Mentor Widget | Device Mode: Hardware Suite */}
           {isStudyMode ? (
-            <div className="p-4 rounded-2xl bg-gradient-to-br from-purple-500/10 via-purple-500/5 to-transparent border border-purple-500/20 space-y-2.5">
-              <div className="flex items-center gap-1.5 text-[11px] font-bold text-purple-600 dark:text-purple-400">
-                <Bot className="w-3.5 h-3.5" />
-                <span>PW-Style AI Mentor</span>
+            <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800 space-y-2.5">
+              <div className="flex items-center gap-1.5 text-[11px] font-bold text-zinc-900 dark:text-zinc-100">
+                <Bot className="w-3.5 h-3.5 text-amber-500" />
+                <span>LecturePod AI Mentor</span>
               </div>
-              <p className="text-[10px] text-zinc-600 dark:text-zinc-300 leading-relaxed">
+              <p className="text-[10px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
                 Clear doubts from any classroom lecture instantly in English or Hinglish.
               </p>
               <Link
                 href="/lectures?tab=mentor"
-                className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-[11px] font-bold transition shadow-xs"
+                className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-950 text-white dark:bg-white dark:text-zinc-950 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-[11px] font-bold transition shadow-xs"
               >
-                <Sparkles className="w-3 h-3 text-amber-300" />
+                <Sparkles className="w-3 h-3 text-amber-400 dark:text-amber-600" />
                 <span>Ask Doubt to Mentor →</span>
               </Link>
             </div>
