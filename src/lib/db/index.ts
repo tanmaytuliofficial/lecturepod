@@ -42,11 +42,13 @@ function initSchema(db: Database.Database) {
 
     CREATE TABLE IF NOT EXISTS devices (
       id TEXT PRIMARY KEY,
-      user_id TEXT NOT NULL,
-      name TEXT NOT NULL,
-      device_identifier TEXT UNIQUE NOT NULL,
+      user_id TEXT,
+      name TEXT DEFAULT 'Lecture Pod',
+      device_identifier TEXT,
+      device_id TEXT,
+      pair_code TEXT,
       api_key_hash TEXT,
-      status TEXT DEFAULT 'paired', -- 'paired', 'offline', 'online', 'syncing'
+      status TEXT DEFAULT 'UNPAIRED', -- 'UNPAIRED', 'PAIRED', 'offline', 'online', 'syncing'
       last_heartbeat_at DATETIME,
       last_sync_at DATETIME,
       queued_recordings INTEGER DEFAULT 0,
@@ -55,7 +57,7 @@ function initSchema(db: Database.Database) {
       firmware_version TEXT DEFAULT 'v1.2.0-lp',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE CASCADE
+      FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE SET NULL
     );
 
     CREATE TABLE IF NOT EXISTS device_pairing_tokens (
@@ -203,6 +205,19 @@ function initSchema(db: Database.Database) {
     CREATE INDEX IF NOT EXISTS idx_study_tasks_user ON study_tasks(user_id);
     CREATE INDEX IF NOT EXISTS idx_devices_user ON devices(user_id);
   `);
+
+  // Ensure devices table has device_id and pair_code columns if already created
+  try {
+    const cols = db.pragma('table_info(devices)') as any[];
+    const names = cols.map((c: any) => c.name);
+    if (!names.includes('device_id')) {
+      db.exec("ALTER TABLE devices ADD COLUMN device_id TEXT");
+      db.exec("UPDATE devices SET device_id = device_identifier WHERE device_id IS NULL");
+    }
+    if (!names.includes('pair_code')) {
+      db.exec("ALTER TABLE devices ADD COLUMN pair_code TEXT");
+    }
+  } catch (e) {}
 }
 
 export default getDatabase;
