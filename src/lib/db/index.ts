@@ -2,10 +2,18 @@ import Database from 'better-sqlite3';
 import path from 'path';
 import fs from 'fs';
 
-// Ensure data directory exists
-const dbDir = path.join(process.cwd(), 'data');
-if (!fs.existsSync(dbDir)) {
-  fs.mkdirSync(dbDir, { recursive: true });
+// Ensure data directory exists (handles Vercel/serverless writable /tmp directory)
+const isServerless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+const dbDir = isServerless 
+  ? path.join('/tmp', 'lecturepod-data') 
+  : path.join(process.cwd(), 'data');
+
+try {
+  if (!fs.existsSync(dbDir)) {
+    fs.mkdirSync(dbDir, { recursive: true });
+  }
+} catch (err) {
+  console.warn('Could not create db directory at', dbDir, err);
 }
 
 const dbPath = path.join(dbDir, 'lecturepod.db');
