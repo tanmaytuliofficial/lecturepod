@@ -218,6 +218,24 @@ function initSchema(db: Database.Database) {
       db.exec("ALTER TABLE devices ADD COLUMN pair_code TEXT");
     }
   } catch (e) {}
+
+  // Ensure lectures table has transcript, structured_notes, flashcards, quiz columns
+  try {
+    const lCols = db.pragma('table_info(lectures)') as any[];
+    const lNames = lCols.map((c: any) => c.name);
+    if (!lNames.includes('transcript')) {
+      db.exec("ALTER TABLE lectures ADD COLUMN transcript TEXT");
+    }
+    if (!lNames.includes('structured_notes')) {
+      db.exec("ALTER TABLE lectures ADD COLUMN structured_notes TEXT");
+    }
+    if (!lNames.includes('flashcards')) {
+      db.exec("ALTER TABLE lectures ADD COLUMN flashcards TEXT");
+    }
+    if (!lNames.includes('quiz')) {
+      db.exec("ALTER TABLE lectures ADD COLUMN quiz TEXT");
+    }
+  } catch (e) {}
 }
 
 export default getDatabase;
